@@ -1,0 +1,154 @@
+{
+  "kencarson_overseas": {
+    "sounds": [
+      {
+        "name": "opium:kencarson_overseas",
+        "stream": true
+      }
+    ]
+  },
+  "kencarson_ss": {
+    "sounds": [
+      {
+        "name": "opium:kencarson_ss",
+        "stream": true
+      }
+    ]
+  },
+  "playboicarti_24songs": {
+    "sounds": [
+      {
+        "name": "opium:playboicarti_24songs",
+        "stream": true
+      }
+    ]
+  },
+  "playboicarti_eviljordan": {
+    "sounds": [
+      {
+        "name": "opium:playboicarti_eviljordan",
+        "stream": true
+      }
+    ]
+  },
+  "destroylonely_nostylist": {
+    "sounds": [
+      {
+        "name": "opium:destroylonely_nostylist",
+        "stream": true
+      }
+    ]
+  },
+  "kencarson_hardcore": {
+    "sounds": [
+      {
+        "name": "opium:kencarson_hardcore",
+        "stream": true
+      }
+    ]
+  },
+  "kencarson_moneyandsex": {
+    "sounds": [
+      {
+        "name": "opium:kencarson_moneyandsex",
+        "stream": true
+      }
+    ]
+  },
+  "kencarson_boss": {
+    "sounds": [
+      {
+        "name": "opium:kencarson_boss",
+        "stream": true
+      }
+    ]
+  },
+  "kencarson_freeyoungthug": {
+    "sounds": [
+      {
+        "name": "opium:kencarson_freeyoungthug",
+        "stream": true
+      }
+    ]
+  },
+  "playboicarti_lean4real": {
+    "sounds": [
+      {
+        "name": "opium:playboicarti_lean4real",
+        "stream": true
+      }
+    ]
+  },
+  "playboicarti_longtime": {
+    "sounds": [
+      {
+        "name": "opium:playboicarti_longtime",
+        "stream": true
+      }
+    ]
+  },
+  "playboicarti_vampanthem": {
+    "sounds": [
+      {
+        "name": "opium:playboicarti_vampanthem",
+        "stream": true
+      }
+    ]
+  },
+  "homixidegang_guitars": {
+    "sounds": [
+      {
+        "name": "opium:homixidegang_guitars",
+        "stream": true
+      }
+    ]
+  },
+  "kencarson_mdma": {
+    "sounds": [
+      {
+        "name": "opium:kencarson_mdma",
+        "stream": true
+      }
+    ]
+  },
+  "homixidegang_rckstarbitch": {
+    "sounds": [
+      {
+        "name": "opium:homixidegang_rckstarbitch",
+        "stream": true
+      }
+    ]
+  },
+  "playboicarti_onthattime": {
+    "sounds": [
+      {
+        "name": "opium:playboicarti_onthattime",
+        "stream": true
+      }
+    ]
+  },
+  "destroylonely_intheair": {
+    "sounds": [
+      {
+        "name": "opium:destroylonely_intheair",
+        "stream": true
+      }
+    ]
+  },
+  "kencarson_swagoverload": {
+    "sounds": [
+      {
+        "name": "opium:kencarson_swagoverload",
+        "stream": true
+      }
+    ]
+  },
+  "destroylonely_vvsvalentine": {
+    "sounds": [
+      {
+        "name": "opium:destroylonely_vvsvalentine",
+        "stream": true
+      }
+    ]
+  }
+}
