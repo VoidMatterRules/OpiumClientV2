@@ -16,7 +16,6 @@ import we.devs.opium.api.manager.miscellaneous.ConfigManager;
 import we.devs.opium.api.manager.miscellaneous.PlayerManager;
 import we.devs.opium.api.manager.miscellaneous.UUIDManager;
 import we.devs.opium.api.manager.module.ModuleManager;
-import we.devs.opium.api.utilities.HWIDValidator;
 import we.devs.opium.api.utilities.TPSUtils;
 import we.devs.opium.api.utilities.dump.AntiDump;
 import we.devs.opium.client.events.EventTick;
@@ -29,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import we.devs.opium.api.manager.miscellaneous.FontManager;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -39,7 +39,7 @@ import java.util.Timer;
 public class Opium implements ModInitializer {
 
     public static final String NAME = "Opium";
-    public static final String VERSION = "1.4.2-Beta";
+    public static final String VERSION = "2.0 - Beta";
     public static final Logger LOGGER = LoggerFactory.getLogger("Opium");
 
     public static Color COLOR_CLIPBOARD;
