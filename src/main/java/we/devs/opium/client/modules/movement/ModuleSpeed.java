@@ -108,6 +108,7 @@ public class ModuleSpeed extends Module {
 
     //handles the Velocity Calculations for Strafing
     public Vec2f handleVanillaMotion(final float speed) {
+        assert mc.player != null;
         float forward = mc.player.input.movementForward;
         float strafe = mc.player.input.movementSideways;
         if (forward == 0.0f && strafe == 0.0f) {

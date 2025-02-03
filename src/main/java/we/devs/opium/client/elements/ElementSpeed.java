@@ -17,22 +17,31 @@ public class ElementSpeed extends Element {
     public void onRender2D(EventRender2D event) {
         if(RenderUtils.getFontRenderer() == null) return;
         super.onRender2D(event);
+
+        String text = getText();
+
         if(ModuleFont.INSTANCE.customFonts.getValue()) {
-            this.frame.setWidth(RenderUtils.getFontRenderer().getStringWidth(getText()));
-            this.frame.setHeight(RenderUtils.getFontRenderer().getStringHeight(getText()));
+            this.frame.setWidth(RenderUtils.getFontRenderer().getStringWidth(text));
+            this.frame.setHeight(RenderUtils.getFontRenderer().getStringHeight(text));
         } else {
-            this.frame.setWidth(mc.textRenderer.getWidth(this.getText()));
+            this.frame.setWidth(mc.textRenderer.getWidth(text));
             this.frame.setHeight(mc.textRenderer.fontHeight);
         }
-        RenderUtils.drawString(new MatrixStack(),this.getText(), (int) this.frame.getX(), (int) this.frame.getY(), ModuleColor.getColor().getRGB());
+
+        RenderUtils.drawString(new MatrixStack(), text, (int) this.frame.getX(), (int) this.frame.getY(), ModuleColor.getColor().getRGB());
     }
 
     String getText() {
         DecimalFormat df = new DecimalFormat("#.#");
-        double d = mc.player.getX() - mc.player.prevX;
+
+        // Calculate movement distance per tick
+        assert mc.player != null;
+        double deltaX = mc.player.getX() - mc.player.prevX;
         double deltaZ = mc.player.getZ() - mc.player.prevZ;
-        float tickRate = mc.getRenderTime();
-        String speedText = df.format((double) (MathHelper.sqrt((float) (d * d + deltaZ * deltaZ)) / tickRate) * 3.6);
-        return "Speed: " + speedText;
+
+        // Compute speed in blocks per tick, then convert to blocks per second (20 ticks per second)
+        double speedBlocksPerSecond = MathHelper.sqrt((float) (deltaX * deltaX + deltaZ * deltaZ)) * 20;
+
+        return "Speed: " + df.format(speedBlocksPerSecond) + " Blocks/s";
     }
 }

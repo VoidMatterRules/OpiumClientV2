@@ -1,19 +1,28 @@
 package we.devs.opium.client.modules.player;
 
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Hand;
 import we.devs.opium.api.manager.module.Module;
 import we.devs.opium.api.manager.module.RegisterModule;
+import we.devs.opium.api.utilities.ChatUtils;
 import we.devs.opium.api.utilities.InventoryUtils;
 import we.devs.opium.client.values.impl.ValueBoolean;
+import we.devs.opium.client.values.impl.ValueNumber;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @RegisterModule(name = "Elytra Swap", tag = "Elytra Swap", description = "Automatically swap elytra and chestplate", category = Module.Category.PLAYER)
 public class ModuleElytraSwap extends Module {
 
     ValueBoolean autoFirework = new ValueBoolean("AutoFirework", "Auto Firework", "Automatically uses a Firework when switching to an Elytra", true);
     ValueBoolean strictSwitch = new ValueBoolean("StrictSwitch", "Strict Switch", "Switches to fireworks like Vanilla", false);
+    ValueNumber delay = new ValueNumber("CustomDelay", "Custom Delay", "Delay", 4, 1, 20);
 
     @Override
     public void onEnable() {
@@ -38,11 +47,29 @@ public class ModuleElytraSwap extends Module {
             moveItem(armorSlot < 9 ? armorSlot + 36 : armorSlot, 6);
         } else if(armorSlot == 38 && elytraSlot != -1) {
             moveItem(elytraSlot < 9 ? elytraSlot + 36 : elytraSlot, 6);
-            if (autoFirework.getValue()){
+            if (autoFirework.getValue()) {
                 int fireworkSlot = InventoryUtils.findItem(Items.FIREWORK_ROCKET, 0, 36);
+                ChatUtils.sendMessage("Firework Slot: " + fireworkSlot);
                 if (fireworkSlot != -1) {
+                    ChatUtils.sendMessage("Switching Slot...");
                     InventoryUtils.switchSlot(fireworkSlot, !strictSwitch.getValue());
-                    InventoryUtils.itemUsage(Hand.MAIN_HAND);
+                    mc.player.jump();
+                    ChatUtils.sendMessage("Should have jumped?");
+
+                    // Schedule Elytra Flight after delay
+                    ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+                    int delayTicks = delay.getValue().intValue();
+                    long delayMillis = delayTicks * 50L; // Convert ticks to milliseconds
+
+                    scheduler.schedule(() -> {
+                        mc.execute(() -> {
+                            ChatUtils.sendMessage("Activating Elytra...");
+                            mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+                            InventoryUtils.itemUsage(Hand.MAIN_HAND);
+                        });
+                    }, delayMillis, TimeUnit.MILLISECONDS);
+
+                    scheduler.shutdown();
                 }
             }
 

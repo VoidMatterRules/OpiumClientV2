@@ -1,6 +1,5 @@
 package we.devs.opium.api.utilities;
 
-import java.awt.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -11,7 +10,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 
 import net.minecraft.client.MinecraftClient;
-import org.apache.commons.logging.Log;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import we.devs.opium.Opium;

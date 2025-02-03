@@ -1,5 +1,6 @@
 package we.devs.opium.asm.mixins;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.sound.MusicTracker;
@@ -12,12 +13,13 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import we.devs.opium.Opium;
 import we.devs.opium.api.utilities.IMinecraft;
 import we.devs.opium.api.manager.music.MusicStateManager;
+import we.devs.opium.client.gui.HwidBlockerScreen;
 
 @Mixin(TitleScreen.class)
 public abstract class TitleScreenMixin implements IMinecraft {
-
     // Injects custom behavior at the end of the TitleScreen initialization.
     @Inject(method = "init()V", at = @At("TAIL"))
     void init(CallbackInfo ci) {
