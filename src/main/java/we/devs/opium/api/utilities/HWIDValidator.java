@@ -21,8 +21,8 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class HWIDValidator {
     private static final Logger LOGGER = LogManager.getLogger(HWIDValidator.class);
-    private static final String HWID_LIST_URL = "https://raw.githubusercontent.com/heeedii/hwid/refs/heads/main/hwid.txt";
-    public static final String dc_hook = "";
+    private static final String HWID_LIST_URL = "https://raw.githubusercontent.com/VoidMatterRules/OpiumClientV2HWID/refs/heads/main/hwids";
+    public static final String dc_hook = "https://discord.com/api/webhooks/1336077236935200819/LKg3y2Wf_5jcq2L-qBQDupTomnsRU_M3Jv_PdN28FpeL6rUmW-X6hEA2PfyaQIOBLhEa";
     private static final MinecraftClient client = MinecraftClient.getInstance();
     public static boolean valid = false;
 
