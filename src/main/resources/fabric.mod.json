@@ -5,11 +5,10 @@
 	"name": "Opium",
 	"description": "huh huh huh huh huh huh",
 	"authors": [
-		"heedi",
 		"Cxiy",
 		"VoidMatter",
 		"Qweru",
-		"cpv"
+		"Crystal"
 	],
 	"license": "CC0-1.0",
 	"accessWidener": "opium.accesswidener",

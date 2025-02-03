@@ -20,15 +20,11 @@ public class TitleScreenSplashMixin {
         Random random = new Random();
         String[] customSplashes = {
                 "Cxiy",
-                "Heedi",
-                "cpv",
                 "Opium",
-                "", // Empty cz looks good ngl
+                "",
                 "VoidMatter",
                 "Qweru",
-                "Helianthus",
                 "Godmodule",
-                "Tinkoprof",
                 "Crystal"
 
         };
