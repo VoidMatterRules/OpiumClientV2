@@ -10,6 +10,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.util.Hand;
 
 import java.util.function.Predicate;
 
@@ -57,6 +58,12 @@ public class InventoryUtils implements IMinecraft {
         }
         return -1;
     }
+
+    public static void itemUsage(Hand hand) {
+        assert mc.interactionManager != null;
+        mc.interactionManager.interactItem(mc.player,hand);
+    }
+
 
     public static int findBestTool(BlockState block, boolean onlyHotbar) {
         float bestMultiplier = Float.MIN_VALUE;

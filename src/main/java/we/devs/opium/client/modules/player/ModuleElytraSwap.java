@@ -2,17 +2,19 @@ package we.devs.opium.client.modules.player;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.util.Hand;
 import we.devs.opium.api.manager.module.Module;
 import we.devs.opium.api.manager.module.RegisterModule;
-import we.devs.opium.api.utilities.ChatUtils;
 import we.devs.opium.api.utilities.InventoryUtils;
-import we.devs.opium.client.events.EventPacketSend;
-import we.devs.opium.client.events.EventTick;
+import we.devs.opium.client.values.impl.ValueBoolean;
 
 @RegisterModule(name = "Elytra Swap", tag = "Elytra Swap", description = "Automatically swap elytra and chestplate", category = Module.Category.PLAYER)
 public class ModuleElytraSwap extends Module {
+
+    ValueBoolean autoFirework = new ValueBoolean("AutoFirework", "Auto Firework", "Automatically uses a Firework when switching to an Elytra", true);
+    ValueBoolean strictSwitch = new ValueBoolean("StrictSwitch", "Strict Switch", "Switches to fireworks like Vanilla", false);
+
     @Override
     public void onEnable() {
         if(nullCheck()) {
@@ -23,6 +25,7 @@ public class ModuleElytraSwap extends Module {
         int lvl = -1;
         int armorSlot = -1;
         for (int i = 0; i <= 39; i++) {
+            assert mc.player != null;
             Item item = mc.player.getInventory().getStack(i).getItem();
             int itemLvl = getLevel(item);
             if(itemLvl > lvl) {
@@ -30,12 +33,19 @@ public class ModuleElytraSwap extends Module {
                 lvl = itemLvl;
             }
         }
-
         int elytraSlot = InventoryUtils.findItem(Items.ELYTRA, 0, 39);
         if(elytraSlot == 38 && armorSlot != -1) {
             moveItem(armorSlot < 9 ? armorSlot + 36 : armorSlot, 6);
         } else if(armorSlot == 38 && elytraSlot != -1) {
             moveItem(elytraSlot < 9 ? elytraSlot + 36 : elytraSlot, 6);
+            if (autoFirework.getValue()){
+                int fireworkSlot = InventoryUtils.findItem(Items.FIREWORK_ROCKET, 0, 36);
+                if (fireworkSlot != -1) {
+                    InventoryUtils.switchSlot(fireworkSlot, !strictSwitch.getValue());
+                    InventoryUtils.itemUsage(Hand.MAIN_HAND);
+                }
+            }
+
         } else if(elytraSlot != 38 && elytraSlot != -1) {
             moveItem(elytraSlot < 9 ? elytraSlot + 36 : elytraSlot, 6);
         } else if(elytraSlot == -1 && armorSlot != -1 && armorSlot != 38) {
