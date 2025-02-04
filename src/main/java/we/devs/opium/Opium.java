@@ -39,7 +39,7 @@ import java.util.Timer;
 public class Opium implements ModInitializer {
 
     public static final String NAME = "Opium";
-    public static final String VERSION = "2.0 - Beta";
+    public static final String VERSION = "1.5.0 - Beta";
     public static final Logger LOGGER = LoggerFactory.getLogger("Opium");
 
     public static Color COLOR_CLIPBOARD;
