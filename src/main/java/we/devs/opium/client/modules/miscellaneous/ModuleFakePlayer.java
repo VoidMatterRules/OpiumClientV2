@@ -17,8 +17,8 @@ public class ModuleFakePlayer extends Module {
 
     public void onEnable() {
         if (mc.player != null && mc.world != null) {
-            this.fakePlayer = new FakePlayerEntity(mc.player, "OpiumHack");
-            this.fakePlayer.spawn();
+            FakePlayerEntity fakePlayer = new FakePlayerEntity(mc.player, "Opium-Fake-Player", 20.0f, true);
+            fakePlayer.spawn();
         }
     }
 
