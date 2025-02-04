@@ -20,6 +20,7 @@ public class TitleScreenSplashMixin {
         Random random = new Random();
         String[] customSplashes = {
                 "Cxiy",
+                "Heedi",
                 "Opium",
                 "",
                 "VoidMatter",
