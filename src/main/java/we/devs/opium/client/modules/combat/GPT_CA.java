@@ -254,6 +254,7 @@ public class GPT_CA extends Module {
      * @return True if the ray does not hit any blocks, false otherwise.
      */
     private boolean isUnobstructed(Vec3d start, Vec3d end) {
+        assert mc.player != null;
         var raycastResult = mc.world.raycast(new net.minecraft.world.RaycastContext(
                 start,
                 end,
