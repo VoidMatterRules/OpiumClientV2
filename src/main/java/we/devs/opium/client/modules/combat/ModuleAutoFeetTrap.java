@@ -61,7 +61,7 @@ public class ModuleAutoFeetTrap extends Module {
     @Override
     public void onMotion(EventMotion event) {
         super.onMotion(event);
-        SmoothRotationUtil.updateRotation();
+        SmoothRotationUtil.updateRotation(rotateC.getValue());
         if ((double)this.startPosition.getY() != MathUtils.roundToPlaces(mc.player.getY(), 0) && this.mode.getValue().equals(Modes.Normal)) {
             this.disable(true);
             return;
@@ -114,20 +114,8 @@ public class ModuleAutoFeetTrap extends Module {
             if (rotate.getValue()) {
                 SmoothRotationUtil.rotateToBlockPos(position);
             }
-
-            // Place the block after rotation is complete
-            if (SmoothRotationUtil.isRotationComplete()) {
-                BlockUtils.placeBlock(event, position, Hand.MAIN_HAND);
-                ++this.placements;
-
-                // Reset the rotationComplete flag
-                SmoothRotationUtil.resetRotationComplete();
-
-                // Rotate back to the original position
-                if (rotate.getValue()) {
-                    SmoothRotationUtil.rotateBackToOriginal();
-                }
-            }
+            BlockUtils.placeBlock(event, position, Hand.MAIN_HAND);
+            ++this.placements;
         }
     }
 
