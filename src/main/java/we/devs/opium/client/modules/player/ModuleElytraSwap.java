@@ -52,6 +52,7 @@ public class ModuleElytraSwap extends Module {
                 ChatUtils.sendMessage("Firework Slot: " + fireworkSlot);
                 if (fireworkSlot != -1) {
                     ChatUtils.sendMessage("Switching Slot...");
+                    int lastSlot = mc.player.getInventory().selectedSlot;
                     InventoryUtils.switchSlot(fireworkSlot, !strictSwitch.getValue());
                     mc.player.jump();
                     ChatUtils.sendMessage("Should have jumped?");
@@ -70,6 +71,7 @@ public class ModuleElytraSwap extends Module {
                     }, delayMillis, TimeUnit.MILLISECONDS);
 
                     scheduler.shutdown();
+                    InventoryUtils.switchSlot(lastSlot, !strictSwitch.getValue());
                 }
             }
 
