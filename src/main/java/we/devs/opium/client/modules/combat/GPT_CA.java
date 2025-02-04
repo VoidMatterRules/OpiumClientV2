@@ -293,6 +293,7 @@ public class GPT_CA extends Module {
         int crystalSlot = getCrystalSlot();
         if (crystalSlot == -1) {
             ChatUtils.sendMessage("Out of End Crystals!");
+            this.disable(true)
             return;
         }
         int lastSlot = mc.player.getInventory().selectedSlot;
