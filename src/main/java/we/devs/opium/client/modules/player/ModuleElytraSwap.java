@@ -1,6 +1,5 @@
 package we.devs.opium.client.modules.player;
 
-import net.minecraft.client.option.KeyBinding;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
@@ -22,7 +21,7 @@ public class ModuleElytraSwap extends Module {
 
     ValueBoolean autoFirework = new ValueBoolean("AutoFirework", "Auto Firework", "Automatically uses a Firework when switching to an Elytra", true);
     ValueBoolean strictSwitch = new ValueBoolean("StrictSwitch", "Strict Switch", "Switches to fireworks like Vanilla", false);
-    ValueNumber delay = new ValueNumber("CustomDelay", "Custom Delay", "Delay", 4, 1, 20);
+    ValueNumber delay = new ValueNumber("CustomDelay", "Custom Delay", "Delay between the first jump and the second one to activate the Elytra.", 4, 1, 20);
 
     @Override
     public void onEnable() {
@@ -52,7 +51,6 @@ public class ModuleElytraSwap extends Module {
                 ChatUtils.sendMessage("Firework Slot: " + fireworkSlot);
                 if (fireworkSlot != -1) {
                     ChatUtils.sendMessage("Switching Slot...");
-                    int lastSlot = mc.player.getInventory().selectedSlot;
                     InventoryUtils.switchSlot(fireworkSlot, !strictSwitch.getValue());
                     mc.player.jump();
                     ChatUtils.sendMessage("Should have jumped?");
@@ -71,7 +69,6 @@ public class ModuleElytraSwap extends Module {
                     }, delayMillis, TimeUnit.MILLISECONDS);
 
                     scheduler.shutdown();
-                    InventoryUtils.switchSlot(lastSlot, !strictSwitch.getValue());
                 }
             }
 
