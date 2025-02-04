@@ -61,6 +61,7 @@ public class ModuleAutoFeetTrap extends Module {
     @Override
     public void onMotion(EventMotion event) {
         super.onMotion(event);
+        SmoothRotationUtil.updateRotation();
         if ((double)this.startPosition.getY() != MathUtils.roundToPlaces(mc.player.getY(), 0) && this.mode.getValue().equals(Modes.Normal)) {
             this.disable(true);
             return;
@@ -97,25 +98,36 @@ public class ModuleAutoFeetTrap extends Module {
     public void placeBlock(EventMotion event, BlockPos position) {
         if (BlockUtils.surroundPlaceableCheck(position, true, true) && this.placements < this.blocks.getValue().intValue()) {
             assert mc.player != null;
+
             // Attack blocking crystals before placing the block
             attackBlockingCrystals(position);
 
             boolean found = false;
             for (Block fade : fades) {
-                if(fade.pos.equals(position)) {
+                if (fade.pos.equals(position)) {
                     found = true;
                     break;
                 }
             }
-            if(!found) fades.add(new Block(position));
+            if (!found) fades.add(new Block(position));
 
-            if (rotate.getValue()){
-                // RotationUtils.rotate(event, RotationUtils.getRotationsTo(position.toCenterPos()));
-                RotationsUtil.rotateToBlockPos(position, rotateC.getValue());
+            if (rotate.getValue()) {
+                SmoothRotationUtil.rotateToBlockPos(position);
             }
-            BlockUtils.placeBlock(event, position, Hand.MAIN_HAND);
 
-            ++this.placements;
+            // Place the block after rotation is complete
+            if (SmoothRotationUtil.isRotationComplete()) {
+                BlockUtils.placeBlock(event, position, Hand.MAIN_HAND);
+                ++this.placements;
+
+                // Reset the rotationComplete flag
+                SmoothRotationUtil.resetRotationComplete();
+
+                // Rotate back to the original position
+                if (rotate.getValue()) {
+                    SmoothRotationUtil.rotateBackToOriginal();
+                }
+            }
         }
     }
 
