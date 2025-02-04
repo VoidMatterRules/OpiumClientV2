@@ -22,12 +22,10 @@ public class TitleScreenSplashMixin {
                 "Cxiy",
                 "Heedi",
                 "Opium",
-                "", // Empty cz looks good ngl
+                "",
                 "VoidMatter",
                 "Qweru",
-                "Helianthus",
                 "Godmodule",
-                "Tinkoprof",
                 "Crystal"
 
         };

@@ -18,7 +18,7 @@ import we.devs.opium.client.values.impl.ValueNumber;
 @RegisterModule(name = "Speed", description = "Speeds your movement up.", category = Module.Category.MOVEMENT)
 public class ModuleSpeed extends Module {
     ValueEnum mode = new ValueEnum("Mode", "Mode", "", modes.Strafe);
-    ValueNumber speed = new ValueNumber("Speed", "Speed", "Speed", 2.0, 1.0, 10.0);
+    ValueNumber speed = new ValueNumber("Speed", "Speed", "Speed", 2.0f, 1.0f, 10.0f);
 
     @Override
     public void onPlayerMove(PlayerMoveEvent event) {
@@ -41,7 +41,7 @@ public class ModuleSpeed extends Module {
                 }
 
                 //multiplies the base speed by the speed effect and divides it by the slow effect
-                final double base = (0.2873f * speedEffect / slowEffect) * speed.getValue().doubleValue();
+                final double base = (0.2873f * speedEffect / slowEffect) * speed.getValue().floatValue();
                 Vec2f motion = handleVanillaMotion((float) base);
 
                 //sets the speed for the x and z axis' of the Player
