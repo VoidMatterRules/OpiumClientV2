@@ -24,7 +24,7 @@ import we.devs.opium.client.events.EventRender3D;
 import java.awt.*;
 import java.util.List;
 
-@RegisterModule(name = "GPT-CA", description = "GPT-CA", tag = "GPT-CA", category = Module.Category.COMBAT)
+@RegisterModule(name = "AutoCrystalGPT", description = "AutoCrystalGPT", tag = "AutoCrystalGPT", category = Module.Category.COMBAT)
 public class GPT_CA extends Module {
 
     private PlayerEntity target;

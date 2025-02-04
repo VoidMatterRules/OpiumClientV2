@@ -7,13 +7,18 @@ import we.devs.opium.api.utilities.font.fxFontRenderer;
 
 import java.awt.*;
 
+// rewrote by heedi
+
 public class FontManager {
-    public static Font[] fonts;
-    public static int hudFontSize = 8, clientFontSize = 8;
-    public static FontManager INSTANCE = new FontManager();
+    private static Font[] fonts;
+    public static final int HUD_FONT_SIZE = 8;
+    public static final int CLIENT_FONT_SIZE = 8;
+    public static final FontManager INSTANCE = new FontManager();
 
     public FontManager() {
-        refresh();
+        if (fonts == null) {
+            fonts = FontLoader.loadFonts();
+        }
     }
 
     public void refresh() {
@@ -21,15 +26,23 @@ public class FontManager {
     }
 
     public void registerFonts() {
-        FontRenderers.fontRenderer = new FontRenderer(fonts, hudFontSize); //Default font
-        FontRenderers.fxfontRenderer = new fxFontRenderer(fonts, clientFontSize);
+        if (fonts == null || fonts.length == 0) {
+            refresh();
+        }
 
-        FontRenderers.Super_Small_fxfontRenderer = new fxFontRenderer(fonts, 4f);
+        FontRenderers.fontRenderer = new FontRenderer(fonts, HUD_FONT_SIZE);
+        FontRenderers.fxfontRenderer = new fxFontRenderer(fonts, CLIENT_FONT_SIZE);
 
-        FontRenderers.Small_fxfontRenderer = new fxFontRenderer(fonts, 6f);
+        float[] sizes = {4f, 6f, 8f, 13f};
+        fxFontRenderer[] renderers = {
+                FontRenderers.Super_Small_fxfontRenderer,
+                FontRenderers.Small_fxfontRenderer,
+                FontRenderers.Mid_fxfontRenderer,
+                FontRenderers.Large_fxfontRenderer
+        };
 
-        FontRenderers.Mid_fxfontRenderer = new fxFontRenderer(fonts, 8f);
-
-        FontRenderers.Large_fxfontRenderer = new fxFontRenderer(fonts, 13f);
+        for (int i = 0; i < sizes.length; i++) {
+            renderers[i] = new fxFontRenderer(fonts, sizes[i]);
+        }
     }
 }

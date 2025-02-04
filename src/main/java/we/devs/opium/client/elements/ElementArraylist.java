@@ -1,7 +1,5 @@
 package we.devs.opium.client.elements;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Formatting;
 import we.devs.opium.Opium;
 import we.devs.opium.api.manager.element.Element;
@@ -12,11 +10,9 @@ import we.devs.opium.api.utilities.RenderUtils;
 import we.devs.opium.client.events.EventRender2D;
 import we.devs.opium.client.modules.client.ModuleColor;
 import we.devs.opium.client.modules.client.ModuleFont;
-import we.devs.opium.client.modules.client.ModuleHUD;
 import we.devs.opium.client.values.impl.ValueEnum;
 
 import java.awt.*;
-import java.awt.image.renderable.RenderContext;
 import java.util.ArrayList;
 import java.util.Comparator;
 
