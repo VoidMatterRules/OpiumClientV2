@@ -25,8 +25,8 @@ public class TitleScreenSplashMixin {
                 "",
                 "VoidMatter",
                 "Qweru",
-                "Godmodule",
-                "Crystal"
+                "Crystal",
+                "Otterware"
 
         };
         splashText = new SplashTextRenderer(customSplashes[random.nextInt(customSplashes.length)]);
