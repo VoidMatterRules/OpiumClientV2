@@ -122,6 +122,10 @@ public class ModuleCrystalAura extends Module {
         }
 
         if (mc.player.getMainHandStack().getItem() == Items.END_CRYSTAL || autoSwitch.getValue().equals(AutoSwitch.SilentSwitch)) {
+            if (autoSwitch.getValue().equals(AutoSwitch.SilentSwitch)){
+                int CrystalSlot = InventoryUtils.findItem(Items.END_CRYSTAL, 0, 9);
+                InventoryUtils.switchSlot(CrystalSlot, true);
+            }
             if (rotate.getValue()) {
                 facePosition(pos);
             }
