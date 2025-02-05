@@ -188,14 +188,6 @@ public boolean mouseClicked(int mouseX, int mouseY, int mouseButton) {
         }
     }
 
-    public void closeOtherTextboxListening() {
-        for (Component component : this.components) {
-            if (component instanceof StringComponent) {
-                ((StringComponent) component).setListening(false);
-            }
-        }
-    }
-
     public void refresh() {
         int offset = 16;
         for (Component component : this.components) {

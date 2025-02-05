@@ -91,13 +91,13 @@ public class ModuleComponent extends Component {
                         context.getMatrices(),
                         highlightColor,
                         (float)this.getX() - 0.25f, (float)this.getY() - 0.2f,
-                        (float)(this.getX() + this.getWidth() + 0.25f), (float)this.getY() + 0.2f + 14.1f,
+                        this.getX() + this.getWidth() + 0.25f, (float)this.getY() + 0.2f + 14.1f,
                         radius, radius, radius, radius,
                         samples
                 );
             } else {
                 RenderUtils.drawRect(context.getMatrices(),(float)this.getX() - 0.25f, (float)this.getY() - 0.2f,
-                        (float)(this.getX() + this.getWidth() + 0.25f), (float)this.getY() + 0.2f + 14.1f,
+                        this.getX() + this.getWidth() + 0.25f, (float)this.getY() + 0.2f + 14.1f,
                         highlightColor);
             }
         }
@@ -110,13 +110,13 @@ public class ModuleComponent extends Component {
                         context.getMatrices(),
                         Opium.CLICK_GUI.getColor(),
                         (float)this.getX() - 0.25f, (float)this.getY() - 0.2f,
-                        (float)(this.getX() + this.getWidth() + 0.25f), (float)this.getY() + 0.2f + 14.1f,
+                        this.getX() + this.getWidth() + 0.25f, (float)this.getY() + 0.2f + 14.1f,
                         radius, radius, radius, radius,
                         samples
                 );
             } else {
                 RenderUtils.drawRect(context.getMatrices(),(float)this.getX() - 0.25f, (float)this.getY() - 0.2f,
-                        (float)(this.getX() + this.getWidth() + 0.25f), (float)this.getY() + 0.2f + 14.1f,
+                        this.getX() + this.getWidth() + 0.25f, (float)this.getY() + 0.2f + 14.1f,
                         Opium.CLICK_GUI.getColor());
             }
 
@@ -128,12 +128,12 @@ public class ModuleComponent extends Component {
                 if(ModuleGUI.INSTANCE.roundedModules.getValue()) {
                     Renderer2d.renderRoundedOutline(context.getMatrices(), outlineColor,
                             (float)this.getX() - 0.25f, (float)this.getY() - 0.2f,
-                            (float)(this.getX() + this.getWidth() + 0.25f), (float)this.getY() + 0.2f + 14.1f,
+                            this.getX() + this.getWidth() + 0.25f, (float)this.getY() + 0.2f + 14.1f,
                             radius, radius, radius, radius, outlineWidth, samples * 4);
                 } else {
                     Renderer2d.renderRoundedOutline(context.getMatrices(), outlineColor,
                             (float)this.getX() - 0.25f, (float)this.getY() - 0.2f,
-                            (float)(this.getX() + this.getWidth() + 0.25f), (float)this.getY() + 0.2f + 14.1f,
+                            this.getX() + this.getWidth() + 0.25f, (float)this.getY() + 0.2f + 14.1f,
                             0, 0, 0, 0, outlineWidth, 20 * 4);
                 }
             }
@@ -141,7 +141,7 @@ public class ModuleComponent extends Component {
 
         //Render module name
         RenderUtils.drawString(context.getMatrices(), (!this.module.isToggled() ? Formatting.GRAY : "") + this.module.getTag(), this.getX() + 3, this.getY() + 3, ModuleGUI.INSTANCE.fadeText.getValue() ? this.colorMap.get(MathHelper.clamp(this.getY() + 3, 0, height)).getRGB() : -1);
-        //Render keybind if it exists and if we should
+        //Render keybinding if it exists and if we should
         if (this.module.getBind() != 0 && ModuleGUI.INSTANCE.displayKeybinds.getValue()) {
             String keyName = GLFW.glfwGetKeyName(this.module.getBind(), 0);
             String bindKey;
@@ -186,40 +186,20 @@ public class ModuleComponent extends Component {
                         if (!component.isHovering(mouseX, mouseY) || ((BooleanComponent) component).getValue().getDescription().isEmpty())
                             continue;
 
-                        int x = 5;
-                        int y = mc.getWindow().getScaledHeight() - 15;
-
-                        RenderUtils.drawRect(context.getMatrices(), x - 2, y - 2, (float) x + mc.textRenderer.getWidth(booleanComponent.getValue().getDescription()) + 7.0f, y + 10, new Color(40, 40, 40));
-                        RenderUtils.drawOutline(context.getMatrices(), x - 2, y - 2, (float) x + mc.textRenderer.getWidth(booleanComponent.getValue().getDescription()) + 7.0f, y + 10, 1.0f, ModuleColor.getColor());
-                        RenderUtils.drawString(context.getMatrices(), booleanComponent.getValue().getDescription(), x, y, -1);
-
+                        x5(context, booleanComponent.getValue().getDescription());
                         continue;
                     }
                     case NumberComponent numberComponent -> {
                         if (!component.isHovering(mouseX, mouseY) || numberComponent.getValue().getDescription().isEmpty())
                             continue;
 
-                        int x = 5; // Feste X-Position (links)
-                        int y = mc.getWindow().getScaledHeight() - 15; // Feste Y-Position (unten)
-
-                        RenderUtils.drawRect(context.getMatrices(), x - 2, y - 2, (float) x + mc.textRenderer.getWidth(numberComponent.getValue().getDescription()) + 7.0f, y + 10, new Color(40, 40, 40));
-                        RenderUtils.drawOutline(context.getMatrices(), x - 2, y - 2, (float) x + mc.textRenderer.getWidth(numberComponent.getValue().getDescription()) + 7.0f, y + 10, 1.0f, ModuleColor.getColor());
-                        RenderUtils.drawString(context.getMatrices(), numberComponent.getValue().getDescription(), x, y, -1);
-
-                        continue;
+                        x5(context, numberComponent.getValue().getDescription());
                     }
                     case EnumComponent enumComponent -> {
                         if (!component.isHovering(mouseX, mouseY) || enumComponent.getValue().getDescription().isEmpty())
                             continue;
 
-                        int x = 5; // Feste X-Position (links)
-                        int y = mc.getWindow().getScaledHeight() - 15; // Feste Y-Position (unten)
-
-                        RenderUtils.drawRect(context.getMatrices(), x - 2, y - 2, (float) x + mc.textRenderer.getWidth(enumComponent.getValue().getDescription()) + 7.0f, y + 10, new Color(40, 40, 40));
-                        RenderUtils.drawOutline(context.getMatrices(), x - 2, y - 2, (float) x + mc.textRenderer.getWidth(enumComponent.getValue().getDescription()) + 7.0f, y + 10, 1.0f, ModuleColor.getColor());
-                        RenderUtils.drawString(context.getMatrices(), enumComponent.getValue().getDescription(), x, y, -1);
-
-                        continue;
+                        x5(context, enumComponent.getValue().getDescription());
                     }
                     default -> {
                     }
@@ -243,6 +223,16 @@ public class ModuleComponent extends Component {
             }
             context.getMatrices().pop();
         }
+    }
+
+    private void x5(DrawContext context, String description) {
+        int x = 5;
+        int y = mc.getWindow().getScaledHeight() - 15;
+
+        RenderUtils.drawRect(context.getMatrices(), x - 2, y - 2, (float) x + mc.textRenderer.getWidth(description) + 7.0f, y + 10, new Color(40, 40, 40));
+        RenderUtils.drawOutline(context.getMatrices(), x - 2, y - 2, (float) x + mc.textRenderer.getWidth(description) + 7.0f, y + 10, 1.0f, ModuleColor.getColor());
+        RenderUtils.drawString(context.getMatrices(), description, x, y, -1);
+
     }
 
     @Override

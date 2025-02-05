@@ -4,7 +4,6 @@ import me.x150.renderer.font.FontRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import we.devs.opium.Opium;
 import we.devs.opium.api.manager.event.EventListener;
-import we.devs.opium.api.manager.miscellaneous.FontManager;
 import we.devs.opium.api.utilities.RenderUtils;
 import we.devs.opium.api.utilities.TimerUtils;
 import we.devs.opium.api.utilities.font.FontRenderers;
@@ -22,13 +21,19 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 
 public class StringComponent extends Component implements EventListener {
+    private static final int PADDING_X = 3; // Left/right padding
+    private static final int CURSOR_WIDTH = 1; // Cursor width in pixels
+    private static final int CURSOR_HEIGHT = 10; // Cursor height in pixels
+    private static final int BLINK_INTERVAL = 400; // Cursor blink interval in milliseconds
+    private static final Color CURSOR_COLOR = new Color(180, 180, 180);
+    private static final Color TEXT_COLOR = Color.LIGHT_GRAY;
+
     private final ValueString value;
     private boolean listening;
     private String currentString = "";
     private final TimerUtils timer = new TimerUtils();
-    private boolean selecting = false;
-    private boolean line = false;
-    private int renderOffset = 0;
+    private boolean line = false; // Cursor visibility
+    private int renderOffset = 0; // Text scroll offset
 
     public StringComponent(ValueString value, int offset, Frame parent) {
         super(offset, parent);
@@ -38,12 +43,13 @@ public class StringComponent extends Component implements EventListener {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float partialTicks) {
-        if (this.timer.hasTimeElapsed(400L)) {
-            this.line = !this.line; // Cursor-animation (blinking)
+        // Update cursor blink animation
+        if (this.timer.hasTimeElapsed(BLINK_INTERVAL)) {
+            this.line = !this.line;
             this.timer.reset();
         }
 
-        // Backgroundcolor
+        // Background color (darker when listening)
         Color defaultColor = Opium.CLICK_GUI.getColor();
         Color backgroundColor = this.listening
                 ? new Color(
@@ -53,7 +59,7 @@ public class StringComponent extends Component implements EventListener {
                 defaultColor.getAlpha())
                 : defaultColor;
 
-        // Textbox-Background drawn (with outline)
+        // Draw textbox background
         RenderUtils.drawRect(
                 context.getMatrices(),
                 this.getX() + 1,
@@ -62,58 +68,52 @@ public class StringComponent extends Component implements EventListener {
                 this.getY() + 14,
                 backgroundColor);
 
-        // Position and calculation of visible area
-        int paddingX = 3; // left/right separation
-        int textX = this.getX() + paddingX;
+        // Calculate visible text area
+        int textX = this.getX() + PADDING_X;
         int textY = this.getY() + 3;
-        int textBoxWidth = this.getWidth() - 2 * paddingX+20;
+        int textBoxWidth = this.getWidth() - 2 * PADDING_X;
 
-        // get Whole text
+        // Get full text and its width
         String fullText = this.listening ? this.currentString : this.value.getValue();
-        int fullTextWidth = mc.textRenderer.getWidth(fullText); // Width the whole text
+        int fullTextWidth = mc.textRenderer.getWidth(fullText);
 
-        // Visible text calculation while accounting for renderOffset
+        // Calculate visible text based on scroll offset
         String visibleText = fullText;
         if (fullTextWidth > textBoxWidth) {
-            // change of renderOffset, if need be
-            int maxOffset = fullTextWidth - textBoxWidth;
-            if (renderOffset > maxOffset) {
-                renderOffset = maxOffset;
-            }
-
-            // cut String based on Offset and Textbox-width
+            renderOffset = Math.min(renderOffset, fullTextWidth - textBoxWidth);
             visibleText = getVisibleText(fullText, renderOffset, textBoxWidth);
         } else {
-            // no scrolling needed
-            renderOffset = 0;
+            renderOffset = 0; // Reset offset if no scrolling is needed
         }
 
-        // text drawn
+        // Draw visible text with scissor for clipping
         MatrixStack matrices = context.getMatrices();
         matrices.push();
-        context.enableScissor(textX,textY,textX+textBoxWidth,textY+getHeight());
-        RenderUtils.drawString(context.getMatrices(), visibleText, textX, textY, Color.LIGHT_GRAY.getRGB());
+        context.enableScissor(textX, textY, textX + textBoxWidth, textY + getHeight());
+        RenderUtils.drawString(context.getMatrices(), visibleText, textX, textY, TEXT_COLOR.getRGB());
         context.disableScissor();
         matrices.pop();
-        // cursor drawn
-        if (this.listening && this.line) {
-            int visibleTextWidth = (int) FontRenderers.fontRenderer.getStringWidth((visibleText));
-            int cursorX = (textX + visibleTextWidth); // Cursor direkt hinter dem letzten Zeichen
 
-            // draw Cursor
+        // Draw cursor if listening and visible
+        if (this.listening && this.line) {
+            int visibleTextWidth = (int) FontRenderers.fontRenderer.getStringWidth(visibleText);
+            int cursorX = textX + visibleTextWidth;
+
             RenderUtils.drawRect(
                     context.getMatrices(),
                     cursorX,
                     this.getY() + 3,
-                    cursorX + 1, // 1 Pixel breit
-                    this.getY() + 13, // Höhe des Cursors
-                    new Color(180, 180, 180)
+                    cursorX + CURSOR_WIDTH,
+                    this.getY() + 3 + CURSOR_HEIGHT,
+                    CURSOR_COLOR
             );
         }
     }
 
+    /**
+     * Gets the visible portion of the text based on the scroll offset and textbox width.
+     */
     private String getVisibleText(String fullText, int renderOffset, int textBoxWidth) {
-
         StringBuilder visibleText = new StringBuilder();
         int currentWidth = 0;
 
@@ -122,35 +122,27 @@ public class StringComponent extends Component implements EventListener {
             int charWidth = (int) FontRenderers.fontRenderer.getStringWidth(String.valueOf(c));
 
             if (currentWidth + charWidth > textBoxWidth) {
-                break; // Textbox-border reached, abort
+                break; // Stop if the text exceeds the textbox width
             }
 
             visibleText.append(c);
             currentWidth += charWidth;
         }
+
         return visibleText.toString();
     }
 
     @Override
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        selecting = false;
         super.mouseClicked(mouseX, mouseY, mouseButton);
 
-        if (mouseButton == 0) {
-            if (this.isHovering(mouseX, mouseY)) {
-                this.parent.closeOtherTextboxListening();
-
-                this.listening = !this.listening;
-                this.currentString = this.value.getValue();
-            } else if (this.listening) {
-                this.updateString();
-                this.listening = false;
-            }
+        if (mouseButton == 0 && this.isHovering(mouseX, mouseY)) {
+            this.listening = !this.listening;
+            this.currentString = this.value.getValue();
+        } else if (this.listening) {
+            this.updateString();
+            this.listening = false;
         }
-    }
-
-    public void setListening(boolean listening) {
-        this.listening = listening;
     }
 
     @Override
@@ -165,99 +157,118 @@ public class StringComponent extends Component implements EventListener {
     @Override
     public void onKey(EventKey event) {
         if (listening && event.getScanCode() == GLFW.GLFW_PRESS) {
-            if (event.getKeyCode() == InputUtil.GLFW_KEY_ENTER) {
-                this.updateString();
-                this.listening = false;
-            } else if (event.getKeyCode() == InputUtil.GLFW_KEY_BACKSPACE) {
-                if (!this.currentString.isEmpty()) {
-                    this.currentString = this.currentString.substring(0, this.currentString.length() - 1);
-                }
-            } else if (event.getKeyCode() == GLFW.GLFW_KEY_LEFT) {
-                if (renderOffset > 0) {
-                    renderOffset--; // scroll to the left
-                }
-            } else if (event.getKeyCode() == GLFW.GLFW_KEY_RIGHT) {
-                if (mc.textRenderer.getWidth(this.currentString) > this.getWidth() - 6) {
-                    renderOffset++; // scroll to the right
-                }
-            } else if (event.getKeyCode() == GLFW.GLFW_KEY_SPACE) {
-                this.currentString += " ";
-            } else if (event.getKeyCode() == InputUtil.GLFW_KEY_V && isCtrlPressed()) {
-                // pasting text from the clipboard
-                String clipboardData = getClipboard();
-                if (clipboardData != null) {
-                    this.currentString += clipboardData;
-                }
-            } else {
-                String keyName = GLFW.glfwGetKeyName(event.getKeyCode(), event.getScanCode());
-                if (keyName != null && !keyName.isEmpty()) {
-                    char typedChar = keyName.charAt(0);
-                    boolean isShiftPressed = InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT) ||
-                            InputUtil.isKeyPressed(mc.getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT_SHIFT);
-                    if (isShiftPressed) {
-                        typedChar = Character.toUpperCase(typedChar);
+            switch (event.getKeyCode()) {
+                case InputUtil.GLFW_KEY_ENTER:
+                    this.updateString();
+                    this.listening = false;
+                    break;
+                case InputUtil.GLFW_KEY_BACKSPACE:
+                    if (!this.currentString.isEmpty()) {
+                        this.currentString = this.currentString.substring(0, this.currentString.length() - 1);
                     }
-                    if (isValidChatCharacter(typedChar)) {
-                        this.currentString += typedChar;
-
-                        // automatic scrolling to the right if the text gets longer
-                        if (mc.textRenderer.getWidth(this.currentString) > this.getWidth() - 6) {
-                            renderOffset++;
+                    break;
+                case GLFW.GLFW_KEY_LEFT:
+                    if (renderOffset > 0) {
+                        renderOffset--; // Scroll left
+                    }
+                    break;
+                case GLFW.GLFW_KEY_RIGHT:
+                    if (mc.textRenderer.getWidth(this.currentString) > this.getWidth() - 6) {
+                        renderOffset++; // Scroll right
+                    }
+                    break;
+                case GLFW.GLFW_KEY_SPACE:
+                    this.currentString += " ";
+                    break;
+                case InputUtil.GLFW_KEY_V:
+                    if (isCtrlPressed()) {
+                        String clipboardData = getClipboard();
+                        if (clipboardData != null) {
+                            this.currentString += clipboardData;
                         }
                     }
+                    break;
+                default:
+                    handleTypedCharacter(event);
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Handles typed characters and updates the current string.
+     */
+    private void handleTypedCharacter(EventKey event) {
+        String keyName = GLFW.glfwGetKeyName(event.getKeyCode(), event.getScanCode());
+        if (keyName != null && !keyName.isEmpty()) {
+            char typedChar = keyName.charAt(0);
+            if (isShiftPressed()) {
+                typedChar = Character.toUpperCase(typedChar);
+            }
+            if (isValidChatCharacter(typedChar)) {
+                this.currentString += typedChar;
+
+                // Auto-scroll if text exceeds textbox width
+                if (mc.textRenderer.getWidth(this.currentString) > this.getWidth() - 6) {
+                    renderOffset++;
                 }
             }
         }
     }
 
+    /**
+     * Checks if the character is valid for chat input.
+     */
     private boolean isValidChatCharacter(char c) {
         return c >= ' ' && c != 127;
     }
 
+    /**
+     * Updates the value with the current string.
+     */
     private void updateString() {
         this.value.setValue(this.currentString);
     }
 
-    private String removeLastCharacter(String input) {
-        if (!input.isEmpty()) {
-            return input.substring(0, input.length() - 1);
-        }
-        return input;
-    }
-
     /**
-     * Safe Method to read the clipboard contents
+     * Safely retrieves the clipboard contents.
      */
     private String getClipboard() {
-        // try to read GLFW-Clipboard
-        long window = GLFW.glfwGetCurrentContext();
-        CharSequence glfwClipboard = GLFW.glfwGetClipboardString(window);
-
-        if (glfwClipboard != null) {
-            return glfwClipboard.toString();
-        }
-
-        // Fallback on AWT (if the GUI environment is available)
         try {
+            long window = GLFW.glfwGetCurrentContext();
+            CharSequence glfwClipboard = GLFW.glfwGetClipboardString(window);
+            if (glfwClipboard != null) {
+                return glfwClipboard.toString();
+            }
+
             if (!GraphicsEnvironment.isHeadless()) {
                 return (String) Toolkit.getDefaultToolkit()
                         .getSystemClipboard()
                         .getData(DataFlavor.stringFlavor);
             }
-        } catch (HeadlessException | UnsupportedFlavorException | IOException e) {
-            System.err.println("Error when accessing the clipboard:" + e.getMessage());
+        } catch (UnsupportedFlavorException | IOException e) {
+            System.err.println("Error accessing clipboard: " + e.getMessage());
         }
 
         return null;
     }
 
     /**
-     * Checks if CTRL for Copy-Paste is pressed.
+     * Checks if CTRL is pressed for copy-paste operations.
      */
     private boolean isCtrlPressed() {
         long handle = mc.getWindow().getHandle();
         return InputUtil.isKeyPressed(handle, InputUtil.GLFW_KEY_LEFT_CONTROL)
                 || InputUtil.isKeyPressed(handle, InputUtil.GLFW_KEY_RIGHT_CONTROL);
+    }
+
+    /**
+     * Checks if SHIFT is pressed for uppercase characters.
+     */
+    private boolean isShiftPressed() {
+        long handle = mc.getWindow().getHandle();
+        return InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_LEFT_SHIFT)
+                || InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_RIGHT_SHIFT);
     }
 
     public ValueString getValue() {
