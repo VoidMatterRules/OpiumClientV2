@@ -44,7 +44,7 @@ public class ModuleCrystalAura extends Module {
     private final ValueBoolean antiWeakness = new ValueBoolean("AntiWeakness", "Anti Weakness", "Automatically Switches to a sword to counteract weakness", AntiWeaknessMode.Normal);
     private final ValueBoolean blockPlacements = new ValueBoolean("BlockPlacements", "Block Placements", "Determines if the Client will Place Obsidian at Possible Damage Positions that do not have obsidian.", false); //Intention here is that if the client found a good position but is missing a block to place it on, it would place an obsidian block, this should be calculated in such a way that it doesnt include any positions that dont have a placeable block near them and also dont place on already placeable blocks like obi and bedrock
     private final ValueBoolean totemPopPrio = new ValueBoolean("TotemPopPrio", "Totem Pop Prio", "Determines if Totem Pops are Valued over the highest Damage that can be done to a target", true); //this would mean that if you had 2 cases: in 1 case the target would pop, but another Target in case 2 would take more damage, the totempop would be prioritised, meaning the first case would be made the target
-
+    private final ValueNumber armorBreaker = new ValueNumber("ArmorBreaker", "Armor Breaker", "If a Enemy Players Armor reaches this threashhold or is below it, the CA will target said Player. (-1 to turn it off)" 25, -1, 100);
 
     private final Set<BlockPos> blacklistedPositions = new HashSet<>();
 
@@ -193,6 +193,21 @@ public class ModuleCrystalAura extends Module {
         mc.player.setYaw(yaw);
         mc.player.setPitch(pitch);
     }
+
+    /*private boolean targetArmorDurabilityCheck(){
+        float durability = armorComponent.getMaxDamage() - armorComponent.getDamage();
+        int percent = (int) ((durability / (float) armorComponent.getMaxDamage()) * 100F);
+        if (percent =< armorBreaker.getValue())
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private void targetArmorReductionCalculator($damage)
+    {
+
+    }*/
 
     public enum AutoSwitch {
         None,
