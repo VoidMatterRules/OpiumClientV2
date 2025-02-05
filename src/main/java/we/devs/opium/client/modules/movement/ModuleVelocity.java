@@ -20,14 +20,41 @@ import we.devs.opium.client.values.impl.ValueNumber;
 @RegisterModule(name="Velocity", description="Remove the knockback of the player.", category = Module.Category.MOVEMENT )
 public class ModuleVelocity extends Module {
     public static ValueBoolean noPush = new ValueBoolean("NoPush", "NoPush", "", false);
+    public static ValueBoolean wallsOnly = new ValueBoolean("Walls", "Walls", "", true);
     public static ValueBoolean grim = new ValueBoolean("Grim", "Grim", "Bypass for GrimAC v2", false);
     public static ValueNumber horizontal = new ValueNumber("Horizontal", "Horizontal", "", 0.0f, 0.0f, 100.0f);
     public static ValueNumber vertical = new ValueNumber("Vertical", "Vertical", "", 0.0f, 0.0f, 100.0f);
+
+    private Boolean doingVelocity = true;
+    private Formatting hudStringColor = Formatting.GREEN;
+    private String getVelocityState() {
+        if (doingVelocity) {
+            return "ON";
+        } else return "OFF";
+    }
+    public void onTick() { // handle states
+        if (wallsOnly.getValue() && mc.world.getBlockState(mc.player.getBlockPos()).isAir()) {
+            doingVelocity = false;
+            hudStringColor = Formatting.RED;
+        }
+        if (wallsOnly.getValue() && !mc.world.getBlockState(mc.player.getBlockPos()).isAir()) {
+            doingVelocity = true;
+            hudStringColor = Formatting.GREEN;
+        }
+        if (!wallsOnly.getValue()) {
+            doingVelocity = true;
+            hudStringColor = Formatting.GREEN;
+        }
+    }
 
     public void onPacketReceive(EventPacketReceive event) {
         EntityVelocityUpdateS2CPacket sPacketEntityVelocity;
 
         if (mc.player == null || mc.world == null) {
+            return;
+        }
+
+        if (wallsOnly.getValue() && mc.world.getBlockState(mc.player.getBlockPos()).isAir()) {
             return;
         }
 
@@ -47,12 +74,17 @@ public class ModuleVelocity extends Module {
             ((IEntityVelocityUpdateS2CPacket) sPacketEntityVelocity).setY((int) (sPacketEntityVelocity.getVelocityY() * vertical.getValue().floatValue() / 100.0f));
             ((IEntityVelocityUpdateS2CPacket) sPacketEntityVelocity).setZ((int) (sPacketEntityVelocity.getVelocityZ() * horizontal.getValue().floatValue() / 100.0f));
 
+            doingVelocity = true;
+            hudStringColor = Formatting.GREEN;
+
         }
         if (event.getPacket() instanceof ExplosionS2CPacket sPacketExplosion) {
             ((IExplosionS2CPacket) sPacketExplosion).setX((sPacketExplosion.getPlayerVelocityX() * horizontal.getValue().floatValue() / 100.0f));
             ((IExplosionS2CPacket) sPacketExplosion).setY((sPacketExplosion.getPlayerVelocityY() * vertical.getValue().floatValue() / 100.0f));
             ((IExplosionS2CPacket) sPacketExplosion).setZ((sPacketExplosion.getPlayerVelocityZ() * horizontal.getValue().floatValue() / 100.0f));
         }
+        doingVelocity = true;
+        hudStringColor = Formatting.GREEN;
     }
 
     public void onPush(EventPush event) {
@@ -62,6 +94,6 @@ public class ModuleVelocity extends Module {
     }
 
     public String getHudInfo() {
-        return "H" + horizontal.getValue().floatValue() + "%" + Formatting.GRAY + "," + Formatting.WHITE + "V" + vertical.getValue().floatValue() + "%";
+        return "H" + horizontal.getValue().floatValue() + "%" + Formatting.GRAY + "," + Formatting.WHITE + "V" + vertical.getValue().floatValue() + "% " + hudStringColor + getVelocityState();
     }
 }
