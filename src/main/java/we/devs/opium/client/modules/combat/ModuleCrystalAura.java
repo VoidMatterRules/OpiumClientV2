@@ -17,10 +17,12 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import we.devs.opium.api.manager.module.Module;
 import we.devs.opium.api.manager.module.RegisterModule;
+import we.devs.opium.api.utilities.ChatUtils;
 import we.devs.opium.client.values.impl.ValueBoolean;
+import we.devs.opium.client.values.impl.ValueEnum;
 import we.devs.opium.client.values.impl.ValueNumber;
-import we.devs.opium.api.utilities.PlayerUtils
-import we.devs.opium.api.utilities.InventoryUtils
+import we.devs.opium.api.utilities.PlayerUtils;
+import we.devs.opium.api.utilities.InventoryUtils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -41,10 +43,10 @@ public class ModuleCrystalAura extends Module {
     private final ValueNumber breakDelay = new ValueNumber("BreakDelay", "Break Delay", "Determines the Delay between each Break Action in MS", 0, 0, 1000);
     private final ValueBoolean rotate = new ValueBoolean("Rotate", "Rotate", "Turns on the Rotations", false);
     private final ValueEnum autoSwitch = new ValueEnum("AutoSwitch", "Auto Switch", "Automatically Switches either silently or to Mainhand", AutoSwitch.MainHand);
-    private final ValueBoolean antiWeakness = new ValueBoolean("AntiWeakness", "Anti Weakness", "Automatically Switches to a sword to counteract weakness", AntiWeaknessMode.Normal);
+    private final ValueEnum antiWeakness = new ValueEnum("AntiWeakness", "Anti Weakness", "Automatically Switches to a sword to counteract weakness", AntiWeaknessMode.Normal);
     private final ValueBoolean blockPlacements = new ValueBoolean("BlockPlacements", "Block Placements", "Determines if the Client will Place Obsidian at Possible Damage Positions that do not have obsidian.", false); //Intention here is that if the client found a good position but is missing a block to place it on, it would place an obsidian block, this should be calculated in such a way that it doesnt include any positions that dont have a placeable block near them and also dont place on already placeable blocks like obi and bedrock
     private final ValueBoolean totemPopPrio = new ValueBoolean("TotemPopPrio", "Totem Pop Prio", "Determines if Totem Pops are Valued over the highest Damage that can be done to a target", true); //this would mean that if you had 2 cases: in 1 case the target would pop, but another Target in case 2 would take more damage, the totempop would be prioritised, meaning the first case would be made the target
-    private final ValueNumber armorBreaker = new ValueNumber("ArmorBreaker", "Armor Breaker", "If a Enemy Players Armor reaches this threashhold or is below it, the CA will target said Player. (-1 to turn it off)" 25, -1, 100);
+    private final ValueNumber armorBreaker = new ValueNumber("ArmorBreaker", "Armor Breaker", "If a Enemy Players Armor reaches this threashhold or is below it, the CA will target said Player. (-1 to turn it off)", 25, -1, 100);
 
     private final Set<BlockPos> blacklistedPositions = new HashSet<>();
 
@@ -145,15 +147,15 @@ public class ModuleCrystalAura extends Module {
                     faceEntity(entity);
                 }
                 if (antiWeakness.getValue().equals(AntiWeaknessMode.Normal) || antiWeakness.getValue().equals(AntiWeaknessMode.SilentSwitch)) {
-                    boolean weakness = PlayerUtils.getWeakness
+                    boolean weakness = PlayerUtils.getWeakness();
                     if (weakness) {
                         int slot = InventoryUtils.getSlotByClass(SwordItem.class);
                         if (mc.player.getInventory().selectedSlot != slot) {
                             if (slot == -1) {
                                 return;
                             }
-                            ChatUtils.sendMessage(AntiWeaknessMode.getValue()); //comment this out if it doesnt work, as its for debugging later
-                            InventoryUtils.switchSlot(slot, AntiWeaknessMode.getValue().equals(AntiWeaknessMode.SilentSwitch)); //smth seems to not work correctly here as only silent switch works correctly
+                            ChatUtils.sendMessage(antiWeakness.getValue().toString()); //comment this out if it doesnt work, as its for debugging later
+                            InventoryUtils.switchSlot(slot, antiWeakness.getValue().equals(AntiWeaknessMode.SilentSwitch)); //smth seems to not work correctly here as only silent switch works correctly
                         }
                     }
                 }
