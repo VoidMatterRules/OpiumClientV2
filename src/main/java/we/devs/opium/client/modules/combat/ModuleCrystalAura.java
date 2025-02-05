@@ -18,10 +18,9 @@ import net.minecraft.util.math.Vec3d;
 import we.devs.opium.api.manager.module.Module;
 import we.devs.opium.api.manager.module.RegisterModule;
 import we.devs.opium.client.values.impl.ValueBoolean;
-import we.devs.opium.client.values.impl.ValueEnum;
 import we.devs.opium.client.values.impl.ValueNumber;
-import we.devs.opium.api.utilities.PlayerUtils;
-import we.devs.opium.api.utilities.InventoryUtils;
+import we.devs.opium.api.utilities.PlayerUtils
+import we.devs.opium.api.utilities.InventoryUtils
 
 import java.util.HashSet;
 import java.util.List;
@@ -42,10 +41,10 @@ public class ModuleCrystalAura extends Module {
     private final ValueNumber breakDelay = new ValueNumber("BreakDelay", "Break Delay", "Determines the Delay between each Break Action in MS", 0, 0, 1000);
     private final ValueBoolean rotate = new ValueBoolean("Rotate", "Rotate", "Turns on the Rotations", false);
     private final ValueEnum autoSwitch = new ValueEnum("AutoSwitch", "Auto Switch", "Automatically Switches either silently or to Mainhand", AutoSwitch.MainHand);
-    private final ValueEnum antiWeakness = new ValueEnum("AntiWeakness", "Anti Weakness", "Automatically Switches to a sword to counteract weakness", AntiWeaknessMode.Normal);
+    private final ValueBoolean antiWeakness = new ValueBoolean("AntiWeakness", "Anti Weakness", "Automatically Switches to a sword to counteract weakness", AntiWeaknessMode.Normal);
     private final ValueBoolean blockPlacements = new ValueBoolean("BlockPlacements", "Block Placements", "Determines if the Client will Place Obsidian at Possible Damage Positions that do not have obsidian.", false); //Intention here is that if the client found a good position but is missing a block to place it on, it would place an obsidian block, this should be calculated in such a way that it doesnt include any positions that dont have a placeable block near them and also dont place on already placeable blocks like obi and bedrock
     private final ValueBoolean totemPopPrio = new ValueBoolean("TotemPopPrio", "Totem Pop Prio", "Determines if Totem Pops are Valued over the highest Damage that can be done to a target", true); //this would mean that if you had 2 cases: in 1 case the target would pop, but another Target in case 2 would take more damage, the totempop would be prioritised, meaning the first case would be made the target
-
+    private final ValueNumber armorBreaker = new ValueNumber("ArmorBreaker", "Armor Breaker", "If a Enemy Players Armor reaches this threashhold or is below it, the CA will target said Player. (-1 to turn it off)" 25, -1, 100);
 
     private final Set<BlockPos> blacklistedPositions = new HashSet<>();
 
@@ -58,7 +57,7 @@ public class ModuleCrystalAura extends Module {
             return;
         }
 
-        BlockPos placePos = findBestPlacePosition(target);
+        BlockPos placePos = findBestPlacePosition(target); // there should also be a similar method just for breaking, so the breaking can kick in independent of the placing (usefull if a crystal is already placed and the aura should only break it)
         while (placePos != null && !placeCrystal(placePos)) {
             blacklistedPositions.add(placePos);
             placePos = findBestPlacePosition(target);
@@ -102,7 +101,7 @@ public class ModuleCrystalAura extends Module {
                 .filter(pos -> !blacklistedPositions.contains(pos))
                 .max((pos1, pos2) -> Float.compare(calculateDamage(pos1, target), calculateDamage(pos2, target)))
                 .orElse(null);
-    } //make this a foreach loop, so that it quickly goes through the blocks and checks them, the one with the highest calculated damage and inside the specified ranges should then get picked, this should also get done in a variabalie way, as currently it only checks pre defined positions
+    } //make this a foreach loop, so that it quickly goes through the blocks and checks them, the one with the highest calculated damage and inside of the specified ranges should then get picked, this should also get done in a variabalie way, as currently it only checks pre defined positions
 
     private boolean isValidTargetBlock(BlockPos pos) {
         return mc.world.getBlockState(pos).getBlock() == Blocks.BEDROCK || mc.world.getBlockState(pos).getBlock() == Blocks.OBSIDIAN;
@@ -116,23 +115,16 @@ public class ModuleCrystalAura extends Module {
     } // i'd love to get a short introduction to this, to later continue it
 
     private boolean placeCrystal(BlockPos pos) {
-        if (mc.player.getMainHandStack().getItem() != Items.END_CRYSTAL && autoSwitch.getValue().equals(AutoSwitch.MainHand)) {
-            // Swap to end crystal if not holding one
-            for (int i = 0; i < 9; i++) {
-                ItemStack stack = mc.player.getInventory().getStack(i);
-                if (stack.getItem() == Items.END_CRYSTAL) {
-                    mc.player.getInventory().selectedSlot = i;
-                    mc.getNetworkHandler().sendPacket(new UpdateSelectedSlotC2SPacket(i));  // Ensure slot update is sent
-                    break;
-                }
-            }
-        }
-
-        if (mc.player.getMainHandStack().getItem() == Items.END_CRYSTAL || autoSwitch.getValue().equals(AutoSwitch.SilentSwitch)) {
-            if (autoSwitch.getValue().equals(AutoSwitch.SilentSwitch)){
-                int CrystalSlot = InventoryUtils.findItem(Items.END_CRYSTAL, 0, 9);
+        int CrystalSlot = InventoryUtils.findItem(Items.END_CRYSTAL, 0, 9);
+        if (CrystalSlot == -1) {
+            if (autoSwitch.getValue().equals(AutoSwitch.MainHand)) {
+                InventoryUtils.switchSlot(CrystalSlot, false);
+            } else if (autoSwitch.getValue().equals(AutoSwitch.SilentSwitch)) {
                 InventoryUtils.switchSlot(CrystalSlot, true);
             }
+        } else {
+            ChatUtils.sendMessage("No Crystals were found.", "CrystalAura");
+        }
             if (rotate.getValue()) {
                 facePosition(pos);
             }
@@ -144,10 +136,6 @@ public class ModuleCrystalAura extends Module {
                 blacklistedPositions.add(pos);
                 return false;
             }
-        } else {
-            blacklistedPositions.add(pos);
-            return false;
-        }
     }
 
     private void breakCrystalAt(BlockPos pos) {
@@ -157,14 +145,15 @@ public class ModuleCrystalAura extends Module {
                     faceEntity(entity);
                 }
                 if (antiWeakness.getValue().equals(AntiWeaknessMode.Normal) || antiWeakness.getValue().equals(AntiWeaknessMode.SilentSwitch)) {
-                    boolean weakness = PlayerUtils.getWeakness();
+                    boolean weakness = PlayerUtils.getWeakness
                     if (weakness) {
                         int slot = InventoryUtils.getSlotByClass(SwordItem.class);
                         if (mc.player.getInventory().selectedSlot != slot) {
                             if (slot == -1) {
                                 return;
                             }
-                            InventoryUtils.switchSlot(slot, antiWeakness.getValue().equals(AntiWeaknessMode.SilentSwitch));
+                            ChatUtils.sendMessage(AntiWeaknessMode.getValue()); //comment this out if it doesnt work, as its for debugging later
+                            InventoryUtils.switchSlot(slot, AntiWeaknessMode.getValue().equals(AntiWeaknessMode.SilentSwitch)); //smth seems to not work correctly here as only silent switch works correctly
                         }
                     }
                 }
@@ -204,6 +193,21 @@ public class ModuleCrystalAura extends Module {
         mc.player.setYaw(yaw);
         mc.player.setPitch(pitch);
     }
+
+    /*private boolean targetArmorDurabilityCheck(){
+        float durability = armorComponent.getMaxDamage() - armorComponent.getDamage();
+        int percent = (int) ((durability / (float) armorComponent.getMaxDamage()) * 100F);
+        if (percent =< armorBreaker.getValue())
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private void targetArmorReductionCalculator($damage)
+    {
+
+    }*/
 
     public enum AutoSwitch {
         None,

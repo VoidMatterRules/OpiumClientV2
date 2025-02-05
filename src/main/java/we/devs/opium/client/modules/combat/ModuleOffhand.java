@@ -16,7 +16,8 @@ public class ModuleOffhand extends Module {
     ValueNumber hp = new ValueNumber("Health", "Health", "Health of player", 12.0f, 1.0f, 20.0f);
     ValueNumber fall = new ValueNumber("Fall", "Fall", "Fall distance.", 10, 5, 30);
     ValueNumber holeHp = new ValueNumber("HoleHp", "Hole HP", "Determines at what health it will switch to a totem, inside of a Hole", 6.0f, 1.0f, 20.0f);
-    ValueBoolean swordGap = new ValueBoolean("SwordGap", "Sword Gap", "Automatically switch to gap when sword.", false);
+    ValueBoolean swordGap = new ValueBoolean("SwordGap", "Sword Gap", "Automatically switch to gap when holding a sword and right clicking.", false);
+
 
     @Override
     public void onTick() {
