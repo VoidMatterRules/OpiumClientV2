@@ -115,23 +115,16 @@ public class ModuleCrystalAura extends Module {
     } // i'd love to get a short introduction to this, to later continue it
 
     private boolean placeCrystal(BlockPos pos) {
-        if (mc.player.getMainHandStack().getItem() != Items.END_CRYSTAL && autoSwitch.getValue().equals(AutoSwitch.MainHand)) {
-            // Swap to end crystal if not holding one
-            for (int i = 0; i < 9; i++) {
-                ItemStack stack = mc.player.getInventory().getStack(i);
-                if (stack.getItem() == Items.END_CRYSTAL) {
-                    mc.player.getInventory().selectedSlot = i;
-                    mc.getNetworkHandler().sendPacket(new UpdateSelectedSlotC2SPacket(i));  // Ensure slot update is sent
-                    break;
-                }
-            }
-        }
-
-        if (mc.player.getMainHandStack().getItem() == Items.END_CRYSTAL || autoSwitch.getValue().equals(AutoSwitch.SilentSwitch)) {
-            if (autoSwitch.getValue().equals(AutoSwitch.SilentSwitch)){
-                int CrystalSlot = InventoryUtils.findItem(Items.END_CRYSTAL, 0, 9);
+        int CrystalSlot = InventoryUtils.findItem(Items.END_CRYSTAL, 0, 9);
+        if (CrystalSlot == -1) {
+            if (autoSwitch.getValue().equals(AutoSwitch.MainHand)) {
+                InventoryUtils.switchSlot(CrystalSlot, false);
+            } else if (autoSwitch.getValue().equals(AutoSwitch.SilentSwitch)) {
                 InventoryUtils.switchSlot(CrystalSlot, true);
             }
+        } else {
+            ChatUtils.sendMessage("No Crystals were found.", "CrystalAura");
+        }
             if (rotate.getValue()) {
                 facePosition(pos);
             }
@@ -143,10 +136,6 @@ public class ModuleCrystalAura extends Module {
                 blacklistedPositions.add(pos);
                 return false;
             }
-        } else {
-            blacklistedPositions.add(pos);
-            return false;
-        }
     }
 
     private void breakCrystalAt(BlockPos pos) {
