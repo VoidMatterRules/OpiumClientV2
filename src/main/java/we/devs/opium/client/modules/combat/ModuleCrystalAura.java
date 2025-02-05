@@ -12,7 +12,6 @@ import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import we.devs.opium.api.manager.module.Module;
@@ -70,24 +69,25 @@ public class ModuleCrystalAura extends Module {
     }
 
     private BlockPos findBestPlacePosition(PlayerEntity target) {
-        BlockPos standingOn = target.getBlockPos().down(); // Block the player is standing on
+        BlockPos targetPos = target.getBlockPos();
+        List<BlockPos> positions = Stream.of(
+                targetPos.north(),
+                targetPos.south(),
+                targetPos.east(),
+                targetPos.west(),
+                targetPos.north().down(),
+                targetPos.south().down(),
+                targetPos.east().down(),
+                targetPos.west().down(),
+                targetPos.down()
+        ).collect(Collectors.toList());
 
-        List<BlockPos> possiblePositions = Stream.of(
-                        standingOn.north(), standingOn.south(), standingOn.east(), standingOn.west(),
-                        standingOn.north().down(), standingOn.south().down(),
-                        standingOn.east().down(), standingOn.west().down()
-                )
-                .filter(this::isValidTargetBlock) // Ensure it's a valid block (obsidian/bedrock)
+        return positions.stream()
+                .filter(pos -> isValidTargetBlock(pos) && target.getPos().distanceTo(Vec3d.ofCenter(pos)) >= 1)
                 .filter(pos -> !blacklistedPositions.contains(pos))
-                .sorted((p1, p2) -> Double.compare(p1.getSquaredDistance(target.getPos()), p2.getSquaredDistance(target.getPos())))
-                .collect(Collectors.toList());
-
-        // Return the best block based on damage calculations
-        return possiblePositions.stream()
-                .max((p1, p2) -> Float.compare(calculateDamage(p1, target), calculateDamage(p2, target)))
+                .max((pos1, pos2) -> Float.compare(calculateDamage(pos1, target), calculateDamage(pos2, target)))
                 .orElse(null);
     }
-
 
     private boolean isValidTargetBlock(BlockPos pos) {
         return mc.world.getBlockState(pos).getBlock() == Blocks.BEDROCK || mc.world.getBlockState(pos).getBlock() == Blocks.OBSIDIAN;
@@ -132,19 +132,15 @@ public class ModuleCrystalAura extends Module {
     }
 
     private void breakCrystalAt(BlockPos pos) {
-        EndCrystalEntity crystal = mc.world.getEntitiesByClass(EndCrystalEntity.class,
-                        new Box(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1, pos.getY() + 2, pos.getZ() + 1),
-                        e -> !e.isRemoved())
-                .stream()
-                .findFirst()
-                .orElse(null);
-
-        if (crystal != null) {
-            if (rotate.getValue()) {
-                faceEntity(crystal);
+        for (Entity entity : mc.world.getEntities()) {
+            if (entity instanceof EndCrystalEntity && entity.getBlockPos().equals(pos)) {
+                if (rotate.getValue()) {
+                    faceEntity(entity);
+                }
+                mc.interactionManager.attackEntity(mc.player, entity);
+                mc.player.swingHand(Hand.MAIN_HAND);
+                return;
             }
-            mc.interactionManager.attackEntity(mc.player, crystal);
-            mc.player.swingHand(Hand.MAIN_HAND);
         }
     }
 
