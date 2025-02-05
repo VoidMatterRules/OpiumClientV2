@@ -34,10 +34,16 @@ public class ModuleCrystalAura extends Module {
     private final MinecraftClient mc = MinecraftClient.getInstance();
     private final ValueNumber targetRange = new ValueNumber("TargetRange", "Target Range", "The Max Range a Target can be from the Player to be considered a Target", 12.5f, 1.0f, 20.0f);
     private final ValueNumber placeRange = new ValueNumber("PlaceRange", "Place Range", "The Max Range at which a crystal can be placed", 4.5, 1.0, 6.0); //Its important to keep the target Range and Place Range seperate, when calculating the best Position it needs to check if the Position is in the Range that is set by the Place Range, if not it needs to continue
+    private final ValueNumber placeSpeed = new ValueNumber("PlaceSpeed", "Place Speed", "Determines how many Crystals will be attempted to place per second", 20f, 1f, 20f); //This might be scrapped, but could be used to determine the amount of tries on strict servers, like cps limits (cps are usually for break speed but you get the idea)
+    private final ValueNumber placeDelay = new ValueNumber("Place Delay", "Place Delay", "Determines the Delay between each Place Action in MS", 0, 0, 1000);
     private final ValueNumber breakRange = new ValueNumber("BreakRange", "Break Range", "The Max Range at which a crystal can be broken", 4.5, 1.0, 6.0);
+    private final ValueNumber breakSpeed = new ValueNumber("BreakSpeed", "Break Speed", "Determines the amount of attacks / clicks per second", 20f, 1f, 20f); //Same as PlaceSpeed, now im unsure yet what this will actually do, as the BreakDelay will automatically limit the amount of cps, should be thought over how this might get implemented / is it needed (mainly added the idea of this setting due to future)
+    private final ValueNumber breakDelay = new ValueNumber("BreakDelay", "Break Delay", "Determines the Delay between each Break Action in MS", 0, 0, 1000);
     private final ValueBoolean rotate = new ValueBoolean("Rotate", "Rotate", "Turns on the Rotations", false);
-    private final ValueEnum autoSwitch = new ValueEnum("AutoSwitch", "Auto Switch", "Automatically Switches either silently or to Mainhand", AutoSwitch.MainHand)
-    private final ValueBoolean antiWeakness = new ValueBoolean("AntiWeakness", "Anti Weakness", "Automatically Switches to a sword to counteract weakness", AntiWeaknessMode.Normal)
+    private final ValueEnum autoSwitch = new ValueEnum("AutoSwitch", "Auto Switch", "Automatically Switches either silently or to Mainhand", AutoSwitch.MainHand);
+    private final ValueBoolean antiWeakness = new ValueBoolean("AntiWeakness", "Anti Weakness", "Automatically Switches to a sword to counteract weakness", AntiWeaknessMode.Normal);
+    private final ValueBoolean blockPlacements = new ValueBoolean("BlockPlacements", "Block Placements", "Determines if the Client will Place Obsidian at Possible Damage Positions that do not have obsidian.", false); //Intention here is that if the client found a good position but is missing a block to place it on, it would place an obsidian block, this should be calculated in such a way that it doesnt include any positions that dont have a placeable block near them and also dont place on already placeable blocks like obi and bedrock
+    private final ValueBoolean totemPopPrio = new ValueBoolean("TotemPopPrio", "Totem Pop Prio", "Determines if Totem Pops are Valued over the highest Damage that can be done to a target", true); //this would mean that if you had 2 cases: in 1 case the target would pop, but another Target in case 2 would take more damage, the totempop would be prioritised, meaning the first case would be made the target
 
 
     private final Set<BlockPos> blacklistedPositions = new HashSet<>();
@@ -95,7 +101,7 @@ public class ModuleCrystalAura extends Module {
                 .filter(pos -> !blacklistedPositions.contains(pos))
                 .max((pos1, pos2) -> Float.compare(calculateDamage(pos1, target), calculateDamage(pos2, target)))
                 .orElse(null);
-    } //make this a foreach loop, so that it quickly goes through the blocks and checks them, the one with the highest calculated damage and inside of the specified ranges should then get picked
+    } //make this a foreach loop, so that it quickly goes through the blocks and checks them, the one with the highest calculated damage and inside of the specified ranges should then get picked, this should also get done in a variabalie way, as currently it only checks pre defined positions
 
     private boolean isValidTargetBlock(BlockPos pos) {
         return mc.world.getBlockState(pos).getBlock() == Blocks.BEDROCK || mc.world.getBlockState(pos).getBlock() == Blocks.OBSIDIAN;
