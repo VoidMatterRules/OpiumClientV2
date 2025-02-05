@@ -57,7 +57,7 @@ public class ModuleCrystalAura extends Module {
             return;
         }
 
-        BlockPos placePos = findBestPlacePosition(target);
+        BlockPos placePos = findBestPlacePosition(target); // there should also be a similar method just for breaking, so the breaking can kick in independent of the placing (usefull if a crystal is already placed and the aura should only break it)
         while (placePos != null && !placeCrystal(placePos)) {
             blacklistedPositions.add(placePos);
             placePos = findBestPlacePosition(target);
@@ -152,7 +152,8 @@ public class ModuleCrystalAura extends Module {
                             if (slot == -1) {
                                 return;
                             }
-                            InventoryUtils.switchSlot(slot, AntiWeaknessMode.getValue().equals(AntiWeaknessMode.SilentSwitch));
+                            ChatUtils.sendMessage(AntiWeaknessMode.getValue()); //comment this out if it doesnt work, as its for debugging later
+                            InventoryUtils.switchSlot(slot, AntiWeaknessMode.getValue().equals(AntiWeaknessMode.SilentSwitch)); //smth seems to not work correctly here as only silent switch works correctly
                         }
                     }
                 }
