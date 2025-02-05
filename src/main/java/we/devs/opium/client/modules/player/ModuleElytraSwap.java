@@ -3,97 +3,126 @@ package we.devs.opium.client.modules.player;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
-import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Hand;
 import we.devs.opium.api.manager.module.Module;
 import we.devs.opium.api.manager.module.RegisterModule;
-import we.devs.opium.api.utilities.ChatUtils;
 import we.devs.opium.api.utilities.InventoryUtils;
 import we.devs.opium.client.values.impl.ValueBoolean;
 import we.devs.opium.client.values.impl.ValueNumber;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.Random;
 
 @RegisterModule(name = "Elytra Swap", tag = "Elytra Swap", description = "Automatically swap elytra and chestplate", category = Module.Category.PLAYER)
 public class ModuleElytraSwap extends Module {
 
-    ValueBoolean autoFirework = new ValueBoolean("AutoFirework", "Auto Firework", "Automatically uses a Firework when switching to an Elytra", true);
-    ValueBoolean strictSwitch = new ValueBoolean("StrictSwitch", "Strict Switch", "Switches to fireworks like Vanilla", false);
-    ValueNumber delay = new ValueNumber("CustomDelay", "Custom Delay", "Delay between the first jump and the second one to activate the Elytra.", 4, 1, 20);
+    private final ValueBoolean autoFirework = new ValueBoolean("AutoFirework", "Auto Firework", "Automatically uses a Firework when switching to an Elytra", true);
+    private final ValueBoolean useInvFirework = new ValueBoolean("InventoryFireWork", "Inventory Firework", "Automatically uses a Firework from your inv and uses it over offhand", true);
+    private final ValueBoolean strictSwitch = new ValueBoolean("StrictSwitch", "Strict Switch", "Switches to fireworks like Vanilla", false);
+    private final ValueNumber delay = new ValueNumber("CustomDelay", "Custom Delay", "Delay between the first jump and the second one to activate the Elytra.", 4, 1, 20);
+
+    private final Random random = new Random();
+    private int ticksSinceEnabled = 0;
+    private boolean hasSwapped = false;
 
     @Override
     public void onEnable() {
-        if(nullCheck()) {
+        if (nullCheck()) {
             disable(false);
             return;
         }
 
-        int lvl = -1;
-        int armorSlot = -1;
+        ticksSinceEnabled = 0;
+        hasSwapped = false;
+    }
+
+    @Override
+    public void onTick() {
+        if (nullCheck()) {
+            disable(false);
+            return;
+        }
+
+        ticksSinceEnabled++;
+
+        // Find the best chestplate and elytra slots
+        int bestChestplateSlot = findBestChestplateSlot();
+        int elytraSlot = InventoryUtils.findItem(Items.ELYTRA, 0, 39);
+
+        // Swap logic
+        if (!hasSwapped) {
+            if (elytraSlot == 38 && bestChestplateSlot != -1) {
+                // Swap chestplate to armor slot
+                InventoryUtils.swapSlots(bestChestplateSlot < 9 ? bestChestplateSlot + 36 : bestChestplateSlot, 6);
+                hasSwapped = true;
+            } else if (bestChestplateSlot == 38 && elytraSlot != -1) {
+                // Swap elytra to armor slot
+                InventoryUtils.swapSlots(elytraSlot < 9 ? elytraSlot + 36 : elytraSlot, 6);
+                hasSwapped = true;
+
+                // Handle auto firework logic
+                if (autoFirework.getValue()) {
+                    int fireworkSlot = InventoryUtils.findItem(Items.FIREWORK_ROCKET, 0, 36);
+                    if (fireworkSlot != -1) {
+                        if (!useInvFirework.getValue()) {
+                            InventoryUtils.switchSlot(fireworkSlot, !strictSwitch.getValue());
+                        }
+
+                        // Schedule Elytra flight after a delay
+                        int delayTicks = delay.getValue().intValue() + random.nextInt(3); // Add randomness to delay
+                        ticksSinceEnabled = -delayTicks; // Reset counter for delay
+                    }
+                }
+            } else if (elytraSlot != 38 && elytraSlot != -1) {
+                // Swap elytra to armor slot
+                InventoryUtils.swapSlots(elytraSlot < 9 ? elytraSlot + 36 : elytraSlot, 6);
+                hasSwapped = true;
+            } else if (elytraSlot == -1 && bestChestplateSlot != -1 && bestChestplateSlot != 38) {
+                // Swap chestplate to armor slot
+                InventoryUtils.swapSlots(bestChestplateSlot < 9 ? bestChestplateSlot + 36 : bestChestplateSlot, 6);
+                hasSwapped = true;
+            }
+        }
+
+        // Handle auto firework after delay
+        if (hasSwapped && autoFirework.getValue() && ticksSinceEnabled >= 0) {
+            assert mc.player != null;
+            if (mc.player.isOnGround()) mc.player.jump();
+            mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+
+            if (!useInvFirework.getValue()) {
+                InventoryUtils.itemUsage(Hand.MAIN_HAND);
+            } else {
+                InventoryUtils.useItemInOffhand(Items.FIREWORK_ROCKET);
+            }
+
+            disable(true); // Disable the module after completing the task
+        }
+    }
+
+    private int findBestChestplateSlot() {
+        int bestSlot = -1;
+        int bestLevel = -1;
+
         for (int i = 0; i <= 39; i++) {
             assert mc.player != null;
             Item item = mc.player.getInventory().getStack(i).getItem();
-            int itemLvl = getLevel(item);
-            if(itemLvl > lvl) {
-                armorSlot = i;
-                lvl = itemLvl;
+            int itemLevel = getChestplateLevel(item);
+            if (itemLevel > bestLevel) {
+                bestSlot = i;
+                bestLevel = itemLevel;
             }
         }
-        int elytraSlot = InventoryUtils.findItem(Items.ELYTRA, 0, 39);
-        if(elytraSlot == 38 && armorSlot != -1) {
-            moveItem(armorSlot < 9 ? armorSlot + 36 : armorSlot, 6);
-        } else if(armorSlot == 38 && elytraSlot != -1) {
-            moveItem(elytraSlot < 9 ? elytraSlot + 36 : elytraSlot, 6);
-            if (autoFirework.getValue()) {
-                int fireworkSlot = InventoryUtils.findItem(Items.FIREWORK_ROCKET, 0, 36);
-                ChatUtils.sendMessage("Firework Slot: " + fireworkSlot);
-                if (fireworkSlot != -1) {
-                    ChatUtils.sendMessage("Switching Slot...");
-                    InventoryUtils.switchSlot(fireworkSlot, !strictSwitch.getValue());
-                    mc.player.jump();
-                    ChatUtils.sendMessage("Should have jumped?");
 
-                    // Schedule Elytra Flight after delay
-                    ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-                    int delayTicks = delay.getValue().intValue();
-                    long delayMillis = delayTicks * 50L; // Convert ticks to milliseconds
-
-                    scheduler.schedule(() -> {
-                        mc.execute(() -> {
-                            ChatUtils.sendMessage("Activating Elytra...");
-                            mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
-                            InventoryUtils.itemUsage(Hand.MAIN_HAND);
-                        });
-                    }, delayMillis, TimeUnit.MILLISECONDS);
-
-                    scheduler.shutdown();
-                }
-            }
-
-        } else if(elytraSlot != 38 && elytraSlot != -1) {
-            moveItem(elytraSlot < 9 ? elytraSlot + 36 : elytraSlot, 6);
-        } else if(elytraSlot == -1 && armorSlot != -1 && armorSlot != 38) {
-            moveItem(armorSlot < 9 ? armorSlot + 36 : armorSlot, 6);
-        }
-        disable(true);
+        return bestSlot;
     }
 
-    int getLevel(Item item) {
-        if(item.equals(Items.LEATHER_CHESTPLATE)) return 1;
-        else if(item.equals(Items.CHAINMAIL_CHESTPLATE)) return 2;
-        else if(item.equals(Items.GOLDEN_CHESTPLATE)) return 3;
-        else if(item.equals(Items.IRON_CHESTPLATE)) return 4;
-        else if(item.equals(Items.DIAMOND_CHESTPLATE)) return 5;
-        else if(item.equals(Items.NETHERITE_CHESTPLATE)) return 6;
+    private int getChestplateLevel(Item item) {
+        if (item.equals(Items.LEATHER_CHESTPLATE)) return 1;
+        else if (item.equals(Items.CHAINMAIL_CHESTPLATE)) return 2;
+        else if (item.equals(Items.GOLDEN_CHESTPLATE)) return 3;
+        else if (item.equals(Items.IRON_CHESTPLATE)) return 4;
+        else if (item.equals(Items.DIAMOND_CHESTPLATE)) return 5;
+        else if (item.equals(Items.NETHERITE_CHESTPLATE)) return 6;
         return -1;
-    }
-
-    void moveItem(int slot, int newSlot) {
-        mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, slot, 0, SlotActionType.PICKUP, mc.player);
-        mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, newSlot, 0, SlotActionType.PICKUP, mc.player);
-        mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, slot, 0, SlotActionType.PICKUP, mc.player);
-        mc.interactionManager.tick();
     }
 }
