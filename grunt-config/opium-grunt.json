@@ -1,7 +1,7 @@
 {
   "Settings": {
-    "Input": "build/libs/opium-1.4.2.jar",
-    "Output": "build/libs/opium-1.4.2-obf.jar",
+    "Input": "build/libs/opium-1.5.0.jar",
+    "Output": "build/libs/opium-1.5.0-obf.jar",
     "Libraries": [],
     "Exclusions": [
       "net/minecraft/*",
