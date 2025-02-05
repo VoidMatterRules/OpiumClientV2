@@ -1,6 +1,9 @@
 package we.devs.opium.client.values.impl;
 
 import we.devs.opium.Opium;
+import we.devs.opium.api.utilities.CxRotations;
+import we.devs.opium.api.utilities.RotationUtils;
+import we.devs.opium.api.utilities.RotationsUtil;
 import we.devs.opium.client.events.EventClient;
 import we.devs.opium.client.values.Value;
 

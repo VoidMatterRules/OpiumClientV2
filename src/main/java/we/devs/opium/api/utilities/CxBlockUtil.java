@@ -172,7 +172,7 @@ public class CxBlockUtil {
         if (sneak)
             mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
 
-        RotationUtils.rotateToBlock(bp, rotate, ignoreEntities);
+        CxRotations.rotateToBlock(bp, rotate, ignoreEntities);
 
         sendSequencedPacket(id -> new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, result, id));
 
@@ -194,7 +194,7 @@ public class CxBlockUtil {
 
     public static float @Nullable [] getPlaceAngle(@NotNull BlockPos bp, boolean ignoreEntities) {
         BlockHitResult result = getPlaceResult(bp, ignoreEntities);
-        if (result != null) return RotationUtils.calculateAngle(result.getPos());
+        if (result != null) return CxRotations.calculateAngle(result.getPos());
         return null;
     }
 

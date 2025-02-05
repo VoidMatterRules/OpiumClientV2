@@ -63,6 +63,7 @@ public class ModuleAutoFeetTrap extends Module {
     public void onMotion(EventMotion event) {
         super.onMotion(event);
         SmoothRotationUtil.updateRotation(rotateC.getValue());
+        assert mc.player != null;
         if ((double)this.startPosition.getY() != MathUtils.roundToPlaces(mc.player.getY(), 0) && this.mode.getValue().equals(Modes.Normal)) {
             this.disable(true);
             return;
@@ -113,10 +114,12 @@ public class ModuleAutoFeetTrap extends Module {
             if (!found) fades.add(new Block(position));
 
             if (rotate.getValue()) {
-                //
+                CxRotations.rotateToBlock(position, CxRotations.Rotate.Grim, false);
             }
             //BlockUtils.placeBlock(event, position, Hand.MAIN_HAND);
-            CxBlockUtil.placeBlock(position, rotationE.getValue(), false);
+            CxBlockUtil.placeBlock(position, CxRotations.Rotate.Grim, false);
+
+            // imma kms :sob:
             ++this.placements;
         }
     }
@@ -125,6 +128,8 @@ public class ModuleAutoFeetTrap extends Module {
     public List<BlockPos> getUnsafeBlocks() {
         ArrayList<BlockPos> positions = new ArrayList<>();
         for (BlockPos position : this.getOffsets()) {
+            assert mc.world != null;
+            assert mc.player != null;
             if (!mc.world.getBlockState(position).canReplace(new ItemPlacementContext(mc.player, Hand.MAIN_HAND, mc.player.getStackInHand(Hand.MAIN_HAND), new BlockHitResult(Vec3d.of(position), Direction.UP, position, false)))) continue;
             positions.add(position);
         }
@@ -136,6 +141,7 @@ public class ModuleAutoFeetTrap extends Module {
         if (this.dynamic.getValue()) {
             int z;
             int x;
+            assert mc.player != null;
             double decimalX = Math.abs(mc.player.getX()) - Math.floor(Math.abs(mc.player.getX()));
             double decimalZ = Math.abs(mc.player.getZ()) - Math.floor(Math.abs(mc.player.getZ()));
             int lengthX = this.calculateLength(decimalX, false);
@@ -170,11 +176,13 @@ public class ModuleAutoFeetTrap extends Module {
     }
 
     private BlockPos getPlayerPosition() {
+        assert mc.player != null;
         return new BlockPos(mc.player.getBlockX(), (int) (mc.player.getBlockY() - Math.floor(mc.player.getY()) > 0.8 ? Math.floor(mc.player.getY()) + 1.0 : Math.floor(mc.player.getY())), mc.player.getBlockZ());
     }
 
     private List<BlockPos> getOverlapPositions() {
         ArrayList<BlockPos> positions = new ArrayList<>();
+        assert mc.player != null;
         int offsetX = this.calculateOffset(mc.player.getX() - Math.floor(mc.player.getX()));
         int offsetZ = this.calculateOffset(mc.player.getZ() - Math.floor(mc.player.getZ()));
         positions.add(this.getPlayerPosition());
