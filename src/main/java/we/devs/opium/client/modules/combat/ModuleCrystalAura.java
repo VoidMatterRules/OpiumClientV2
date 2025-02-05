@@ -7,6 +7,7 @@ import net.minecraft.entity.decoration.EndCrystalEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.SwordItem;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.util.Hand;
@@ -18,6 +19,8 @@ import we.devs.opium.api.manager.module.Module;
 import we.devs.opium.api.manager.module.RegisterModule;
 import we.devs.opium.client.values.impl.ValueBoolean;
 import we.devs.opium.client.values.impl.ValueNumber;
+import we.devs.opium.api.utilities.PlayerUtils
+import we.devs.opium.api.utilities.InventoryUtils
 
 import java.util.HashSet;
 import java.util.List;
@@ -29,8 +32,13 @@ import java.util.stream.Stream;
 public class ModuleCrystalAura extends Module {
 
     private final MinecraftClient mc = MinecraftClient.getInstance();
-    private final ValueNumber range = new ValueNumber("Range", "Range", "", 5.0f, 1.0f, 10.0f);
-    private final ValueBoolean rotate = new ValueBoolean("Rotate", "Rotate", "", false);
+    private final ValueNumber targetRange = new ValueNumber("TargetRange", "Target Range", "The Max Range a Target can be from the Player to be considered a Target", 12.5f, 1.0f, 20.0f);
+    private final ValueNumber placeRange = new ValueNumber("PlaceRange", "Place Range", "The Max Range at which a crystal can be placed", 4.5, 1.0, 6.0); //Its important to keep the target Range and Place Range seperate, when calculating the best Position it needs to check if the Position is in the Range that is set by the Place Range, if not it needs to continue
+    private final ValueNumber breakRange = new ValueNumber("BreakRange", "Break Range", "The Max Range at which a crystal can be broken", 4.5, 1.0, 6.0);
+    private final ValueBoolean rotate = new ValueBoolean("Rotate", "Rotate", "Turns on the Rotations", false);
+    private final ValueEnum autoSwitch = new ValueEnum("AutoSwitch", "Auto Switch", "Automatically Switches either silently or to Mainhand", AutoSwitch.MainHand)
+    private final ValueBoolean antiWeakness = new ValueBoolean("AntiWeakness", "Anti Weakness", "Automatically Switches to a sword to counteract weakness", AntiWeaknessMode.Normal)
+
 
     private final Set<BlockPos> blacklistedPositions = new HashSet<>();
 
@@ -66,7 +74,7 @@ public class ModuleCrystalAura extends Module {
                 //.filter(player -> mc.player.distanceTo(player) < range.getValue())
                 .min((player1, player2) -> Double.compare(mc.player.distanceTo(player1), mc.player.distanceTo(player2)))
                 .orElse(null);
-    }
+    } //this code is unclear what it does to me, please make it more readable or make a comment to it, ty
 
     private BlockPos findBestPlacePosition(PlayerEntity target) {
         BlockPos targetPos = target.getBlockPos();
@@ -87,7 +95,7 @@ public class ModuleCrystalAura extends Module {
                 .filter(pos -> !blacklistedPositions.contains(pos))
                 .max((pos1, pos2) -> Float.compare(calculateDamage(pos1, target), calculateDamage(pos2, target)))
                 .orElse(null);
-    }
+    } //make this a foreach loop, so that it quickly goes through the blocks and checks them, the one with the highest calculated damage and inside of the specified ranges should then get picked
 
     private boolean isValidTargetBlock(BlockPos pos) {
         return mc.world.getBlockState(pos).getBlock() == Blocks.BEDROCK || mc.world.getBlockState(pos).getBlock() == Blocks.OBSIDIAN;
@@ -98,10 +106,10 @@ public class ModuleCrystalAura extends Module {
         double dist = Math.sqrt(pos.getSquaredDistance(target.getPos()));
         double exposure = 1.0 - (dist / 12.0);
         return (float) ((exposure * exposure + exposure) * 7.0 * 12.0 + 1.0);
-    }
+    } // i'd love to get a short introduction to this, to later continue it
 
     private boolean placeCrystal(BlockPos pos) {
-        if (mc.player.getMainHandStack().getItem() != Items.END_CRYSTAL) {
+        if (mc.player.getMainHandStack().getItem() != Items.END_CRYSTAL && autoSwitch.getValue().equals(AutoSwitch.MainHand)) {
             // Swap to end crystal if not holding one
             for (int i = 0; i < 9; i++) {
                 ItemStack stack = mc.player.getInventory().getStack(i);
@@ -113,7 +121,7 @@ public class ModuleCrystalAura extends Module {
             }
         }
 
-        if (mc.player.getMainHandStack().getItem() == Items.END_CRYSTAL) {
+        if (mc.player.getMainHandStack().getItem() == Items.END_CRYSTAL || autoSwitch.getValue().equals(AutoSwitch.SilentSwitch)) {
             if (rotate.getValue()) {
                 facePosition(pos);
             }
@@ -136,6 +144,18 @@ public class ModuleCrystalAura extends Module {
             if (entity instanceof EndCrystalEntity && entity.getBlockPos().equals(pos)) {
                 if (rotate.getValue()) {
                     faceEntity(entity);
+                }
+                if (antiWeakness.getValue().equals(AntiWeaknessMode.Normal) || antiWeakness.getValue().equals(AntiWeaknessMode.SilentSwitch)) {
+                    boolean weakness = PlayerUtils.getWeakness
+                    if (weakness) {
+                        int slot = InventoryUtils.getSlotByClass(SwordItem.class);
+                        if (mc.player.getInventory().selectedSlot != slot) {
+                            if (slot == -1) {
+                                return;
+                            }
+                            InventoryUtils.switchSlot(slot, AntiWeaknessMode.getValue().equals(AntiWeaknessMode.SilentSwitch));
+                        }
+                    }
                 }
                 mc.interactionManager.attackEntity(mc.player, entity);
                 mc.player.swingHand(Hand.MAIN_HAND);
@@ -172,5 +192,17 @@ public class ModuleCrystalAura extends Module {
 
         mc.player.setYaw(yaw);
         mc.player.setPitch(pitch);
+    }
+
+    public enum AutoSwitch {
+        None,
+        MainHand,
+        SilentSwitch
+    }
+
+    public enum AntiWeaknessMode {
+        None,
+        Normal,
+        SilentSwitch
     }
 }

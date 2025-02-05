@@ -43,4 +43,12 @@ public class PlayerUtils implements IMinecraft {
         }
         return blocks;
     }
+
+    public static boolean getWeakness() {
+        boolean weakness = false;
+        if (mc.player.hasStatusEffect(StatusEffects.WEAKNESS)) {
+            weakness = true;
+        }
+        return weakness;
+    }
 }
