@@ -12,7 +12,6 @@ import java.util.UUID;
 import static we.devs.opium.Opium.mc;
 
 public class FakePlayerEntity extends OtherClientPlayerEntity {
-    public boolean doNotPush, hideWhenInsideCamera;
 
     public FakePlayerEntity(PlayerEntity player, String name, float health, boolean copyInv) {
         super(Objects.requireNonNull(mc.world), new GameProfile(UUID.randomUUID(), name));

@@ -66,6 +66,26 @@ public class InventoryUtils implements IMinecraft {
         return -1;
     }
 
+    public static void switchToSlot(int slot, boolean silent, Runnable runnable) {
+        assert mc.player != null;
+
+        // Save the original slot
+        int originalSlot = mc.player.getInventory().selectedSlot;
+
+        // Switch to the specified slot
+        switchSlot(slot, silent);
+
+        // Execute the provided code
+        try {
+            runnable.run();
+        } catch (Exception e) {
+            Opium.LOGGER.error("[Inventory Util] { switchToSlot() } : Error during execution: ", e);
+        }
+
+        // Swap back to the original slot
+        switchSlot(originalSlot, silent);
+    }
+
     // Interact with an item in hand
     public static void itemUsage(Hand hand) {
         assert mc.interactionManager != null;
@@ -121,6 +141,8 @@ public class InventoryUtils implements IMinecraft {
     public static void offhandItem(Item item) {
         int slot = findItem(item);
         if (slot != -1) {
+            assert mc.interactionManager != null;
+            assert mc.player != null;
             mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, slot, 0, SlotActionType.PICKUP, mc.player);
             mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, 45, 0, SlotActionType.PICKUP, mc.player);
             mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, slot, 0, SlotActionType.PICKUP, mc.player);

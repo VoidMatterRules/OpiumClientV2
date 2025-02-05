@@ -16,6 +16,7 @@
     "GameOptionsMixin",
     "GameOverlayRendererMixin",
     "IClientPlayerEntity",
+    "IClientWorldMixin",
     "IEntityVelocityUpdateS2CPacket",
     "IExplosionS2CPacket",
     "InGameHudMixin",

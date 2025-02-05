@@ -28,12 +28,6 @@ public class ModuleAura extends Module {
             return;
         }
 
-        if (rotate.getValue()) {
-            float[] rots = RotationUtils.getRotationsToOpp(target);
-            event.setRotationYaw(rots[0]);
-            event.setRotationPitch(rots[1]);
-        }
-
         switch (weapon.getValue()) {
             case Weapon.Require -> {
                 if (!(mc.player.getMainHandStack().getItem() instanceof SwordItem)) {

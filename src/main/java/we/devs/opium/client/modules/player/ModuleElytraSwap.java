@@ -6,11 +6,14 @@ import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.util.Hand;
 import we.devs.opium.api.manager.module.Module;
 import we.devs.opium.api.manager.module.RegisterModule;
+import we.devs.opium.api.utilities.ChatUtils;
 import we.devs.opium.api.utilities.InventoryUtils;
 import we.devs.opium.client.values.impl.ValueBoolean;
 import we.devs.opium.client.values.impl.ValueNumber;
 
-import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @RegisterModule(name = "Elytra Swap", tag = "Elytra Swap", description = "Automatically swap elytra and chestplate", category = Module.Category.PLAYER)
 public class ModuleElytraSwap extends Module {
@@ -20,10 +23,6 @@ public class ModuleElytraSwap extends Module {
     private final ValueBoolean strictSwitch = new ValueBoolean("StrictSwitch", "Strict Switch", "Switches to fireworks like Vanilla", false);
     private final ValueNumber delay = new ValueNumber("CustomDelay", "Custom Delay", "Delay between the first jump and the second one to activate the Elytra.", 4, 1, 20);
 
-    private final Random random = new Random();
-    private int ticksSinceEnabled = 0;
-    private boolean hasSwapped = false;
-
     @Override
     public void onEnable() {
         if (nullCheck()) {
@@ -31,72 +30,64 @@ public class ModuleElytraSwap extends Module {
             return;
         }
 
-        ticksSinceEnabled = 0;
-        hasSwapped = false;
-    }
+        int fireworkSlot;
+        if (useInvFirework.getValue()) {
+            fireworkSlot = InventoryUtils.findItem(Items.FIREWORK_ROCKET, 0, 36);
+        } else fireworkSlot = InventoryUtils.findItem(Items.FIREWORK_ROCKET, 0, 8);
 
-    @Override
-    public void onTick() {
-        if (nullCheck()) {
-            disable(false);
+        if (fireworkSlot == -1) {
+            ChatUtils.sendMessage("No Fireworks Found", "Elytra Swap");
+            disable(true);
             return;
         }
-
-        ticksSinceEnabled++;
 
         // Find the best chestplate and elytra slots
         int bestChestplateSlot = findBestChestplateSlot();
         int elytraSlot = InventoryUtils.findItem(Items.ELYTRA, 0, 39);
 
         // Swap logic
-        if (!hasSwapped) {
-            if (elytraSlot == 38 && bestChestplateSlot != -1) {
-                // Swap chestplate to armor slot
-                InventoryUtils.swapSlots(bestChestplateSlot < 9 ? bestChestplateSlot + 36 : bestChestplateSlot, 6);
-                hasSwapped = true;
-            } else if (bestChestplateSlot == 38 && elytraSlot != -1) {
-                // Swap elytra to armor slot
-                InventoryUtils.swapSlots(elytraSlot < 9 ? elytraSlot + 36 : elytraSlot, 6);
-                hasSwapped = true;
+        if (elytraSlot == 38 && bestChestplateSlot != -1) {
+            // Swap chestplate to armor slot
+            InventoryUtils.swapSlots(bestChestplateSlot < 9 ? bestChestplateSlot + 36 : bestChestplateSlot, 6);
+        } else if (bestChestplateSlot == 38 && elytraSlot != -1) {
+            // Swap elytra to armor slot
+            InventoryUtils.swapSlots(elytraSlot < 9 ? elytraSlot + 36 : elytraSlot, 6);
 
-                // Handle auto firework logic
-                if (autoFirework.getValue()) {
-                    int fireworkSlot = InventoryUtils.findItem(Items.FIREWORK_ROCKET, 0, 36);
-                    if (fireworkSlot != -1) {
-                        if (!useInvFirework.getValue()) {
-                            InventoryUtils.switchSlot(fireworkSlot, !strictSwitch.getValue());
-                        }
+            // Handle auto firework logic
+            if (autoFirework.getValue()) {
 
-                        // Schedule Elytra flight after a delay
-                        int delayTicks = delay.getValue().intValue() + random.nextInt(3); // Add randomness to delay
-                        ticksSinceEnabled = -delayTicks; // Reset counter for delay
+                // Schedule Elytra flight after delay
+                ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+                int delayTicks = delay.getValue().intValue();
+                long delayMillis = delayTicks * 50L; // Convert ticks to milliseconds
+
+                assert mc.player != null;
+                if (mc.player.isOnGround()) mc.player.jump();
+                scheduler.schedule(() -> mc.execute(() -> {
+                    mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+
+                    if (!useInvFirework.getValue()) {
+                        // Use firework from hotbar
+                        InventoryUtils.switchToSlot(fireworkSlot, true, () -> {
+                            InventoryUtils.itemUsage(Hand.MAIN_HAND);
+                        });
+                    } else {
+                        // Use firework from inventory
+                        InventoryUtils.useItemInOffhand(Items.FIREWORK_ROCKET);
                     }
-                }
-            } else if (elytraSlot != 38 && elytraSlot != -1) {
-                // Swap elytra to armor slot
-                InventoryUtils.swapSlots(elytraSlot < 9 ? elytraSlot + 36 : elytraSlot, 6);
-                hasSwapped = true;
-            } else if (elytraSlot == -1 && bestChestplateSlot != -1 && bestChestplateSlot != 38) {
-                // Swap chestplate to armor slot
-                InventoryUtils.swapSlots(bestChestplateSlot < 9 ? bestChestplateSlot + 36 : bestChestplateSlot, 6);
-                hasSwapped = true;
+                }), delayMillis, TimeUnit.MILLISECONDS);
+
+                scheduler.shutdown();
             }
+        } else if (elytraSlot != 38 && elytraSlot != -1) {
+            // Swap elytra to armor slot
+            InventoryUtils.swapSlots(elytraSlot < 9 ? elytraSlot + 36 : elytraSlot, 6);
+        } else if (elytraSlot == -1 && bestChestplateSlot != -1 && bestChestplateSlot != 38) {
+            // Swap chestplate to armor slot
+            InventoryUtils.swapSlots(bestChestplateSlot < 9 ? bestChestplateSlot + 36 : bestChestplateSlot, 6);
         }
 
-        // Handle auto firework after delay
-        if (hasSwapped && autoFirework.getValue() && ticksSinceEnabled >= 0) {
-            assert mc.player != null;
-            if (mc.player.isOnGround()) mc.player.jump();
-            mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
-
-            if (!useInvFirework.getValue()) {
-                InventoryUtils.itemUsage(Hand.MAIN_HAND);
-            } else {
-                InventoryUtils.useItemInOffhand(Items.FIREWORK_ROCKET);
-            }
-
-            disable(true); // Disable the module after completing the task
-        }
+        disable(true); // Disable the module after completing the task
     }
 
     private int findBestChestplateSlot() {

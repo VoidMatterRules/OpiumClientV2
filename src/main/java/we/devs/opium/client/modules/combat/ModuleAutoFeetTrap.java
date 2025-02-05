@@ -40,6 +40,7 @@ public class ModuleAutoFeetTrap extends Module {
     private final ValueBoolean rotate = new ValueBoolean("Rotate", "Packet Rotate", "Rotates to the block after placement.", true);
     private final ValueBoolean rotateC = new ValueBoolean("RotateC", "Rotate Client Side", "Rotates to the block after placement.", false);
     private final ValueNumber attackSpeed = new ValueNumber("AttackSpeed", "Attack Speed", "At What Speed To Attack The Crystals", 1, 1, 20);
+    private final ValueEnum rotationE = new ValueEnum("Test", "Test", "Test", CxRotations.Rotate.Default);
     private int placements;
     private BlockPos startPosition;
 
@@ -112,9 +113,10 @@ public class ModuleAutoFeetTrap extends Module {
             if (!found) fades.add(new Block(position));
 
             if (rotate.getValue()) {
-                SmoothRotationUtil.rotateToBlockPos(position);
+                //
             }
-            BlockUtils.placeBlock(event, position, Hand.MAIN_HAND);
+            //BlockUtils.placeBlock(event, position, Hand.MAIN_HAND);
+            CxBlockUtil.placeBlock(position, rotationE.getValue(), false);
             ++this.placements;
         }
     }
