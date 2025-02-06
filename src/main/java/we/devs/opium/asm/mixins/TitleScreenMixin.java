@@ -1,58 +1,59 @@
 package we.devs.opium.asm.mixins;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.sound.MusicTracker;
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.sound.SoundInstance;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
+import org.slf4j.Logger;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import we.devs.opium.Opium;
-import we.devs.opium.api.utilities.IMinecraft;
+import we.devs.opium.api.manager.music.CustomSoundEngineManager;
 import we.devs.opium.api.manager.music.MusicStateManager;
-import we.devs.opium.client.gui.HwidBlockerScreen;
+import we.devs.opium.api.utilities.IMinecraft;
 
 @Mixin(TitleScreen.class)
 public abstract class TitleScreenMixin implements IMinecraft {
+
+    @Shadow @Final private static Logger LOGGER;
+
     // Injects custom behavior at the end of the TitleScreen initialization.
     @Inject(method = "init()V", at = @At("TAIL"))
     void init(CallbackInfo ci) {
-        // get the Music Tracker
+        // Get the Music Tracker
         MusicTracker musicTracker = mc.getMusicTracker();
 
-        // stop all base minecraft music
+        // Stop all base Minecraft music
         musicTracker.stop();
 
-        // Check if the user defined music is already playing
+        // Check if the user-defined music is already playing
         if (!MusicStateManager.isPlayingCustomMusic()) {
-            MusicStateManager.setPlayingCustomMusic(true); // set the flag
+            MusicStateManager.setPlayingCustomMusic(true); // Set the flag
             playNextTrack(); // Play the next custom track
         }
     }
 
     // Method to play a random track from the custom music pool
+    @Unique
     private void playNextTrack() {
         // Choose a random music track
-        Identifier randomMusic = MusicStateManager.getRandomMusicTrack();
+        String randomMusic = MusicStateManager.getRandomMusicTrack();
 
-        // Create the music instance
-        SoundInstance musicInstance = PositionedSoundInstance.music(SoundEvent.of(randomMusic));
-
-        // Save the current song instance and start it
-        MusicStateManager.setCurrentSong(musicInstance);
-        mc.getSoundManager().play(musicInstance);
+        // Play the track using the custom sound engine
+        CustomSoundEngineManager.getSoundEngine().loadSound("opium/mod_music/" + randomMusic);
+        CustomSoundEngineManager.getSoundEngine().play();
     }
 
     // Injects custom behavior when the TitleScreen is removed
     @Inject(method = "removed()V", at = @At("HEAD"))
     void removed(CallbackInfo ci) {
-        // Keep the current music status if the main menu is left
+        LOGGER.info("Title Screen Closed");
     }
 
     // Injects custom behavior after rendering the panorama background
@@ -61,10 +62,9 @@ public abstract class TitleScreenMixin implements IMinecraft {
         // Check if the current song is still playing
         float musicVolume = mc.options.getSoundVolume(SoundCategory.MUSIC);
         float masterVolume = mc.options.getSoundVolume(SoundCategory.MASTER);
-        SoundInstance currentSong = MusicStateManager.getCurrentSongInstance();
 
-        // If current song is not playing, play the next track
-        if (currentSong != null && !mc.getSoundManager().isPlaying(currentSong)) {
+        // If the current song is not playing, play the next track
+        if (!CustomSoundEngineManager.getSoundEngine().isPlaying()) {
             playNextTrack(); // Start the next track
         }
 
@@ -74,8 +74,7 @@ public abstract class TitleScreenMixin implements IMinecraft {
         int x = 2; // Left lower corner
         int y = screenHeight - 20;
         String baseText = "Playing: ";
-        assert currentSong != null;
-        String trackName = currentSong.getId().getPath().replaceAll("_", " "); // Replace underscores with spaces in track name
+        String trackName = CustomSoundEngineManager.getSoundEngine().getCurrentTrackName();
         String fullText = baseText + trackName; // Full text "Playing: <Trackname>"
 
         // Draw the current track information on the left lower corner
@@ -102,7 +101,7 @@ public abstract class TitleScreenMixin implements IMinecraft {
 
         // Optional: Draw the background image
         context.drawTexture(
-                Identifier.of("opium", "textures/gayassbackground.png"),
+                Identifier.of("opium", "textures/kenbg.png"),
                 0, 0, 0, 0,
                 mc.getWindow().getScaledWidth(),
                 mc.getWindow().getScaledHeight(),

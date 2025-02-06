@@ -3,35 +3,41 @@ package we.devs.opium.api.manager.music;
 import net.minecraft.client.sound.SoundInstance;
 import net.minecraft.util.Identifier;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class MusicStateManager {
     private static boolean isPlayingCustomMusic = false;
-    private static final List<Identifier> CUSTOM_MUSIC_TRACKS = List.of(
-            Identifier.of("opium", "kencarson_overseas"),
-            Identifier.of("opium", "kencarson_ss"),
-            Identifier.of("opium", "playboicarti_24songs"),
-            Identifier.of("opium", "playboicarti_eviljordan"),
-            Identifier.of("opium", "destroylonely_nostylist"),
-            Identifier.of("opium", "kencarson_hardcore"),
-            Identifier.of("opium", "kencarson_moneyandsex"),
-            Identifier.of("opium", "kencarson_boss"),
-            Identifier.of("opium", "kencarson_freeyoungthug"),
-            Identifier.of("opium", "playboicarti_lean4real"),
-            Identifier.of("opium", "playboicarti_longtime"),
-            Identifier.of("opium", "playboicarti_vampanthem"),
-            Identifier.of("opium", "homixidegang_guitars"),
-            Identifier.of("opium", "kencarson_mdma"),
-            Identifier.of("opium", "homixidegang_rckstarbitch"),
-            Identifier.of("opium", "playboicarti_onthattime"),
-            Identifier.of("opium", "destroylonely_intheair"),
-            Identifier.of("opium", "kencarson_swagoverload"),
-            Identifier.of("opium", "destroylonely_vvsvalentine")
-    );
+    private static final List<String> CUSTOM_MUSIC_TRACKS = new ArrayList<>();
     private static final Random RANDOM = new Random();
     private static SoundInstance currentSongInstance;
-    private static Identifier lastPlayedTrack = null; // Safes last played track
+    private static String lastPlayedTrack = null; // Saves last played track
+
+    static {
+        // Load all .ogg files from the mod_music folder
+        loadMusicTracks();
+    }
+
+    /**
+     * Loads all .ogg files from the mod_music folder.
+     */
+    private static void loadMusicTracks() {
+        Path gameDir = Paths.get("").toAbsolutePath(); // Adjust this to your Minecraft game directory
+        Path musicFolder = gameDir.resolve("opium/mod_music");
+
+        if (musicFolder.toFile().exists()) {
+            File[] files = musicFolder.toFile().listFiles((dir, name) -> name.endsWith(".ogg"));
+            if (files != null) {
+                for (File file : files) {
+                    CUSTOM_MUSIC_TRACKS.add(file.getName());
+                }
+            }
+        }
+    }
 
     public static boolean isPlayingCustomMusic() {
         return isPlayingCustomMusic;
@@ -41,10 +47,14 @@ public class MusicStateManager {
         isPlayingCustomMusic = playing;
     }
 
-    public static Identifier getRandomMusicTrack() {
-        Identifier nextTrack;
+    public static String getRandomMusicTrack() {
+        if (CUSTOM_MUSIC_TRACKS.isEmpty()) {
+            throw new IllegalStateException("No music tracks found in mod_music folder.");
+        }
 
-        // Makes sure that the new song is different from the last played song
+        String nextTrack;
+
+        // Make sure the new song is different from the last played song
         do {
             nextTrack = CUSTOM_MUSIC_TRACKS.get(RANDOM.nextInt(CUSTOM_MUSIC_TRACKS.size()));
         } while (nextTrack.equals(lastPlayedTrack) && CUSTOM_MUSIC_TRACKS.size() > 1);
@@ -54,11 +64,8 @@ public class MusicStateManager {
         return nextTrack;
     }
 
-    public static void setCurrentSong(SoundInstance songInstance) {
-        currentSongInstance = songInstance;
-    }
-
-    public static SoundInstance getCurrentSongInstance() {
-        return currentSongInstance;
+    public static boolean doesExist(String trackName) {
+        if (CUSTOM_MUSIC_TRACKS.isEmpty()) {return false;}
+        return CUSTOM_MUSIC_TRACKS.contains(trackName);
     }
 }

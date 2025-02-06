@@ -20,10 +20,12 @@ import we.devs.opium.api.manager.miscellaneous.ConfigManager;
 import we.devs.opium.api.manager.miscellaneous.PlayerManager;
 import we.devs.opium.api.manager.miscellaneous.UUIDManager;
 import we.devs.opium.api.manager.module.ModuleManager;
-import we.devs.opium.api.manager.music.SoundRegistry;
+import we.devs.opium.api.manager.music.CustomSoundEngine;
+import we.devs.opium.api.manager.music.CustomSoundEngineManager;
 import we.devs.opium.api.utilities.MusicDownloader;
 import we.devs.opium.api.utilities.TPSUtils;
 import we.devs.opium.api.utilities.dump.AntiDump;
+import we.devs.opium.asm.mixins.TitleScreenMixin;
 import we.devs.opium.client.events.EventTick;
 import we.devs.opium.client.gui.click.ClickGuiScreen;
 import we.devs.opium.client.gui.config.ConfigManagerScreen;
@@ -99,7 +101,6 @@ public class Opium implements ModInitializer {
         }
 
         MusicDownloader.downloadMusicFiles();
-        //SoundRegistry.registerCustomSounds();
 
         //HWIDValidator.isHWIDValid(devEnv);
 
@@ -143,6 +144,8 @@ public class Opium implements ModInitializer {
                 iconSet = true;
             }
         });
+
+        Runtime.getRuntime().addShutdownHook(new Thread(CustomSoundEngineManager::cleanup));
 
         long endTime = System.currentTimeMillis();
         LOGGER.info("Initialization process for Opium has finished! Took {} ms", endTime - startTime);

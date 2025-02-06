@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 public class MusicDownloader {
 
     private static final String GITHUB_BASE_URL = "https://raw.githubusercontent.com/VoidMatterRules/OpiumClientV2HWID/main/Music/";
-    private static final String MUSIC_FOLDER = "mod_music"; // Folder to store music files locally
+    private static final String MUSIC_FOLDER = "opium/mod_music"; // Folder to store music files locally
 
     public static void downloadMusicFiles() {
         String[] musicFiles = {
