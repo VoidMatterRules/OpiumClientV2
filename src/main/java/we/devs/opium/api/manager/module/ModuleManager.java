@@ -54,7 +54,7 @@ public class ModuleManager implements IMinecraft, EventListener {
         this.register(new ModuleAura());
         this.register(new ModuleCriticals());
         this.register(new GPT_CA());
-        this.register(new ModuleCrystalAura());
+        this.register(new ModuleAutoCrystal());
 
         //Exploit
         this.register(new ModuleHitboxDesync());

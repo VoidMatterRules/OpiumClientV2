@@ -5,11 +5,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.decoration.EndCrystalEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.SwordItem;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
-import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -21,7 +19,6 @@ import we.devs.opium.api.utilities.ChatUtils;
 import we.devs.opium.client.values.impl.ValueBoolean;
 import we.devs.opium.client.values.impl.ValueEnum;
 import we.devs.opium.client.values.impl.ValueNumber;
-import we.devs.opium.api.utilities.PlayerUtils;
 import we.devs.opium.api.utilities.InventoryUtils;
 
 import java.util.HashSet;
@@ -30,8 +27,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@RegisterModule(name = "CrystalAura", description = "Places and breaks crystals on bedrock/obsidian near the target", category = Module.Category.COMBAT)
-public class ModuleCrystalAura extends Module {
+@RegisterModule(name = "AutoCrystal", description = "Places and breaks crystals on bedrock/obsidian near the target", category = Module.Category.COMBAT)
+public class ModuleAutoCrystal extends Module {
 
     private final MinecraftClient mc = MinecraftClient.getInstance();
     private final ValueNumber targetRange = new ValueNumber("TargetRange", "Target Range", "The Max Range a Target can be from the Player to be considered a Target", 12.5f, 1.0f, 20.0f);
