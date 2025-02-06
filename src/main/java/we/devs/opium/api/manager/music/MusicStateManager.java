@@ -25,7 +25,7 @@ public class MusicStateManager {
     /**
      * Loads all .ogg files from the mod_music folder.
      */
-    private static void loadMusicTracks() {
+    public static void loadMusicTracks() {
         Path gameDir = Paths.get("").toAbsolutePath(); // Adjust this to your Minecraft game directory
         Path musicFolder = gameDir.resolve("opium/mod_music");
 

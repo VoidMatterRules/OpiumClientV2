@@ -20,8 +20,7 @@ public class ModuleElytraSwap extends Module {
 
     private final ValueBoolean autoFirework = new ValueBoolean("AutoFirework", "Auto Firework", "Automatically uses a Firework when switching to an Elytra", true);
     private final ValueBoolean useInvFirework = new ValueBoolean("InventoryFireWork", "Inventory Firework", "Automatically uses a Firework from your inv and uses it over offhand", true);
-    private final ValueBoolean strictSwitch = new ValueBoolean("StrictSwitch", "Strict Switch", "Switches to fireworks like Vanilla", false);
-    private final ValueNumber delay = new ValueNumber("CustomDelay", "Custom Delay", "Delay between the first jump and the second one to activate the Elytra.", 4, 1, 20);
+    private final ValueNumber delay = new ValueNumber("CustomDelay", "Custom Delay", "Delay between the first jump and the second one to activate the Elytra.", 4, 1, 8);
 
     @Override
     public void onEnable() {

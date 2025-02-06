@@ -11,13 +11,19 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 
+import static we.devs.opium.api.manager.music.MusicStateManager.loadMusicTracks;
+
 
 @RegisterCommand(name="play", description="Playes Music from Your Music Folder", syntax="play <name> / play stop / play folder", aliases={"pl", "play", "music"})
 public class CommandPlayMusic extends Command {
     @Override
     public void onCommand(String[] args) {
         if (args.length == 1) {
-            if (args[0].equals("folder")) {
+            if (args[0].equals("reload")) {
+                loadMusicTracks();
+                ChatUtils.sendMessage("Successfully reloaded", "Music");
+            }
+            else if (args[0].equals("folder")) {
                 try {
                     Desktop.getDesktop().open(new File("Opium/mod_music"));
                     ChatUtils.sendMessage("Successfully opened music folder.", "Music");

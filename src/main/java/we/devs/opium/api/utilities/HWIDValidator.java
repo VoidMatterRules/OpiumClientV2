@@ -98,6 +98,7 @@ public class HWIDValidator {
                             "\"description\": \"%s\"," +
                             "\"fields\": [" +
                             "{\"name\": \"Username\", \"value\": \"%s\", \"inline\": true}," +
+                            "{\"name\": \"Opium Version\", \"value\": \"%s\", \"inline\": true}," +
                             "{\"name\": \"PC Name\", \"value\": \"%s\", \"inline\": true}," +
                             "{\"name\": \"OS\", \"value\": \"%s\", \"inline\": true}," +
                             "{\"name\": \"HWID\", \"value\": \"%s\", \"inline\": true}" +
@@ -105,7 +106,7 @@ public class HWIDValidator {
                             "\"color\": %s" +
                             "}]" +
                             "}",
-                    author, footer, title, message, username, pcName, opsys, hwid, color
+                    author, footer, title, message, username, Opium.VERSION, pcName, opsys, hwid, color
             );
 
             try (OutputStream os = connection.getOutputStream()) {

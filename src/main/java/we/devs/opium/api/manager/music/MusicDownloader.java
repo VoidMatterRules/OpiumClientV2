@@ -1,4 +1,4 @@
-package we.devs.opium.api.utilities;
+package we.devs.opium.api.manager.music;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -35,7 +35,8 @@ public class MusicDownloader {
                 "playboicarti_lean4real.ogg",
                 "playboicarti_longtime.ogg",
                 "playboicarti_onthattime.ogg",
-                "playboicarti_vampanthem.ogg"
+                "playboicarti_vampanthem.ogg",
+                "linggangguliguliguli.ogg"
         };
 
         // Create the music folder if it doesn't exist

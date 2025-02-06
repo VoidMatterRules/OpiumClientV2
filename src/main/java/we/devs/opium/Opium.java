@@ -2,12 +2,8 @@ package we.devs.opium;
 
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWImage;
@@ -20,12 +16,10 @@ import we.devs.opium.api.manager.miscellaneous.ConfigManager;
 import we.devs.opium.api.manager.miscellaneous.PlayerManager;
 import we.devs.opium.api.manager.miscellaneous.UUIDManager;
 import we.devs.opium.api.manager.module.ModuleManager;
-import we.devs.opium.api.manager.music.CustomSoundEngine;
 import we.devs.opium.api.manager.music.CustomSoundEngineManager;
-import we.devs.opium.api.utilities.MusicDownloader;
+import we.devs.opium.api.manager.music.MusicDownloader;
 import we.devs.opium.api.utilities.TPSUtils;
 import we.devs.opium.api.utilities.dump.AntiDump;
-import we.devs.opium.asm.mixins.TitleScreenMixin;
 import we.devs.opium.client.events.EventTick;
 import we.devs.opium.client.gui.click.ClickGuiScreen;
 import we.devs.opium.client.gui.config.ConfigManagerScreen;
@@ -36,18 +30,11 @@ import org.slf4j.LoggerFactory;
 import we.devs.opium.api.manager.miscellaneous.FontManager;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Timer;
-import java.util.stream.Stream;
 
 
 public class Opium implements ModInitializer {

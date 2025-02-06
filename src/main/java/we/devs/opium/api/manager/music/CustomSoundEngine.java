@@ -26,7 +26,7 @@ public class CustomSoundEngine {
     private int buffer;
     private boolean isPlaying = false;
     private String currentTrackName;
-    @Final private static Logger LOGGER;
+    private static Logger LOGGER;
 
     /**
      * Initializes the OpenAL sound engine.
@@ -35,13 +35,13 @@ public class CustomSoundEngine {
         // Initialize OpenAL device and context
         device = ALC10.alcOpenDevice((ByteBuffer) null);
         if (device == MemoryUtil.NULL) {
-            LOGGER.error("Failed to open OpenAL device.");
+            if (LOGGER != null) LOGGER.error("Failed to open OpenAL device.");
         }
 
         ALCCapabilities alcCapabilities = ALC.createCapabilities(device);
         context = ALC10.alcCreateContext(device, (IntBuffer) null);
         if (context == MemoryUtil.NULL) {
-            LOGGER.error("Failed to open OpenAL context.");
+            if (LOGGER != null) LOGGER.error("Failed to open OpenAL context.");
         }
 
         ALC10.alcMakeContextCurrent(context);
@@ -54,14 +54,14 @@ public class CustomSoundEngine {
      * @param filePath The path to the .ogg file.
      */
     public void loadSound(String filePath) {
-        this.currentTrackName = Paths.get(filePath).getFileName().toString();
+        this.currentTrackName = Paths.get(filePath).getFileName().toString().replaceFirst("\\.ogg$", "");
         try (MemoryStack stack = MemoryStack.stackPush()) {
             IntBuffer channels = stack.mallocInt(1);
             IntBuffer sampleRate = stack.mallocInt(1);
             ShortBuffer rawAudioBuffer = STBVorbis.stb_vorbis_decode_filename(filePath, channels, sampleRate);
 
             if (rawAudioBuffer == null) {
-                LOGGER.error("Failed to load sound file: {}", filePath);
+                if (LOGGER != null) LOGGER.error("Failed to load sound file: {}", filePath);
             }
 
             // Generate a buffer and upload the sound data
@@ -80,7 +80,7 @@ public class CustomSoundEngine {
      */
     public void play() {
         if (source == 0) {
-            LOGGER.error("No sound loaded. Call loadSound() first.");
+            if (LOGGER != null) LOGGER.error("No sound loaded. Call loadSound() first.");
         }
 
         // Get Minecraft's music volume setting
