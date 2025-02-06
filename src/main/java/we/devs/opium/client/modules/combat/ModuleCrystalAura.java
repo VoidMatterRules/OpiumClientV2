@@ -147,8 +147,8 @@ public class ModuleCrystalAura extends Module {
                     faceEntity(entity);
                 }
                 if (antiWeakness.getValue().equals(AntiWeaknessMode.Normal) || antiWeakness.getValue().equals(AntiWeaknessMode.SilentSwitch)) {
-                    boolean weakness = PlayerUtils.getWeakness();
-                    if (weakness) {
+                    //boolean weakness = PlayerUtils.getWeakness();
+                    //if (weakness) {
                         int slot = InventoryUtils.getSlotByClass(SwordItem.class);
                         if (mc.player.getInventory().selectedSlot != slot) {
                             if (slot == -1) {
@@ -157,7 +157,7 @@ public class ModuleCrystalAura extends Module {
                             ChatUtils.sendMessage(antiWeakness.getValue().toString()); //comment this out if it doesnt work, as its for debugging later
                             InventoryUtils.switchSlot(slot, antiWeakness.getValue().equals(AntiWeaknessMode.SilentSwitch)); //smth seems to not work correctly here as only silent switch works correctly
                         }
-                    }
+                    //}
                 }
                 mc.interactionManager.attackEntity(mc.player, entity);
                 mc.player.swingHand(Hand.MAIN_HAND);
