@@ -16,6 +16,7 @@ import net.minecraft.util.math.Vec3d;
 import we.devs.opium.api.manager.module.Module;
 import we.devs.opium.api.manager.module.RegisterModule;
 import we.devs.opium.api.utilities.ChatUtils;
+import we.devs.opium.api.utilities.PlayerUtils;
 import we.devs.opium.client.values.impl.ValueBoolean;
 import we.devs.opium.client.values.impl.ValueEnum;
 import we.devs.opium.client.values.impl.ValueNumber;
