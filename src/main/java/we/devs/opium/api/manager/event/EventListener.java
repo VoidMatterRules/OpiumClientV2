@@ -40,6 +40,9 @@ public interface EventListener {
     default void onTick(EventTick event) {
     }
 
+    default void onPreTick(TickEvent.Pre event) {
+    }
+
     default void onDeath(DeathEvent event) {
     }
 
