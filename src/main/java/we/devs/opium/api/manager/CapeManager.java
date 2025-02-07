@@ -3,6 +3,7 @@ package we.devs.opium.api.manager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
+import we.devs.opium.api.utilities.ChatUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,4 +56,17 @@ public class CapeManager {
         return frames;
     }
 
+    public static void setCape(String capeName) {
+        Identifier newCape = Identifier.of("opium", "textures/capes/" + capeName + ".png");
+        CapeManager.setCurrentCape(newCape);
+    }
+
+    public static void setFullAnimatedCape(String animationName) {
+        List<Identifier> frames = CapeManager.loadAnimationFrames(animationName);
+        if (frames.isEmpty()) {
+            ChatUtils.sendMessage("No animated cape found for animation " + animationName, "Cape");
+            return;
+        }
+        CapeManager.setAnimatedCape(animationName);
+    }
 }
