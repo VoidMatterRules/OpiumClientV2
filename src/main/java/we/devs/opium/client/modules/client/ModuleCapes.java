@@ -33,6 +33,7 @@ public class ModuleCapes extends Module {
         heedii,
         original,
         lightning,
-        cute_bear
+        cute_bear,
+        moppl
     }
 }

@@ -36,7 +36,8 @@ public class MusicDownloader {
                 "playboicarti_longtime.ogg",
                 "playboicarti_onthattime.ogg",
                 "playboicarti_vampanthem.ogg",
-                "linggangguliguliguli.ogg"
+                "linggangguliguliguli.ogg",
+                "moskau.ogg"
         };
 
         // Create the music folder if it doesn't exist
