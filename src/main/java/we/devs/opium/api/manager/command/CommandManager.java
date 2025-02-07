@@ -31,6 +31,7 @@ public class CommandManager implements IMinecraft, EventListener {
         this.register(new CommandOpium());
         this.register(new CommandFakePlayer());
         this.register(new CommandPlayMusic());
+        this.register(new CommandCape());
     }
 
     public void register(Command command) {
