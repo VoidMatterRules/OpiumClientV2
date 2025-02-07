@@ -1,6 +1,7 @@
 package we.devs.opium.api.manager.miscellaneous;
 
 import com.google.gson.*;
+import com.google.gson.stream.JsonWriter;
 import we.devs.opium.Opium;
 import we.devs.opium.api.manager.element.Element;
 import we.devs.opium.api.manager.friend.Friend;
@@ -21,14 +22,7 @@ import java.util.Optional;
 public class ConfigManager {
     public static final String CONFIG_DIRECTORY = "Opium/Configs/";
 
-
-    public void load(String name) {
-        try {
-            this.loadConfig(name);
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
-    }
+    private boolean saving = false;
 
     public void delete(String name) {
         try {
@@ -40,20 +34,13 @@ public class ConfigManager {
 
     public ArrayList<Object> getAvailableConfigs() {
         ArrayList<Object> configNames = new ArrayList<>();
-
-        // Define the directory where configs are stored
         File configDirectory = new File(CONFIG_DIRECTORY);
 
-        // Check if the directory exists and is a directory
         if (configDirectory.exists() && configDirectory.isDirectory()) {
-            // Get all files in the directory
             File[] files = configDirectory.listFiles((dir, name) -> name.endsWith(".json"));
-
             if (files != null) {
-                // Loop through all files and add their names (without the ".json" extension)
                 for (File file : files) {
                     String fileName = file.getName();
-                    // Remove the ".json" extension
                     String configName = fileName.substring(0, fileName.lastIndexOf("."));
                     configNames.add(configName);
                 }
@@ -65,7 +52,6 @@ public class ConfigManager {
         return configNames;
     }
 
-    boolean saving = false;
     public void save(String name) {
         if(saving) return;
         saving = true;
@@ -82,15 +68,6 @@ public class ConfigManager {
         saving = false;
     }
 
-
-    private Optional<Module> findModuleByName(String moduleName) {
-        // Directly call stream() on the List
-        return Opium.MODULE_MANAGER.getModules()
-                .stream()
-                .filter(module -> module.getName().equalsIgnoreCase(moduleName))
-                .findFirst();
-    }
-
     public void saveConfig(String configName) throws IOException {
         if (configName == null || configName.isEmpty()) {
             throw new IllegalArgumentException("Config name cannot be null or empty!");
@@ -102,64 +79,79 @@ public class ConfigManager {
         // Construct the file path
         Path configFilePath = Paths.get(CONFIG_DIRECTORY, configName + ".json");
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        JsonObject rootJson = new JsonObject();
+        // Use JsonWriter for streaming-based writing
+        try (JsonWriter writer = new JsonWriter(
+                new OutputStreamWriter(Files.newOutputStream(configFilePath), StandardCharsets.UTF_8))) {
 
-        // Save Modules
-        JsonObject modulesJson = new JsonObject();
-        for (Module module : Opium.MODULE_MANAGER.getModules()) {
-            JsonObject moduleJson = new JsonObject();
-            JsonObject valueJson = new JsonObject();
+            // For nicer formatting
+            writer.setIndent("  ");
 
-            moduleJson.addProperty("Name", module.getName());
-            moduleJson.addProperty("Status", module.isToggled());
-            this.saveValues(valueJson, module.getValues());  // Using your existing saveValues
-            moduleJson.add("Values", valueJson);
+            writer.beginObject(); // root {
 
-            modulesJson.add(module.getName(), moduleJson);
-        }
-        rootJson.add("Modules", modulesJson);
+            writer.name("Modules");
+            writer.beginObject(); // "Modules": {
+            for (Module module : Opium.MODULE_MANAGER.getModules()) {
+                writer.name(module.getName());
+                writer.beginObject(); // moduleName: {
 
-        // Save Elements
-        JsonObject elementsJson = new JsonObject();
-        for (Element element : Opium.ELEMENT_MANAGER.getElements()) {
-            JsonObject elementJson = new JsonObject();
-            JsonObject valueJson = new JsonObject();
-            JsonObject positionJson = new JsonObject();
+                writer.name("Name").value(module.getName());
+                writer.name("Status").value(module.isToggled());
 
-            elementJson.addProperty("Name", element.getName());
-            elementJson.addProperty("Status", element.isToggled());
-            this.saveValues(valueJson, element.getValues());  // Using your existing saveValues
+                writer.name("Values");
+                writer.beginObject();
+                // Instead of building a JsonObject, write out each Value
+                writeValues(writer, module.getValues());
+                writer.endObject(); // Values }
 
-            positionJson.addProperty("X", element.frame.getX());
-            positionJson.addProperty("Y", element.frame.getY());
-            elementJson.add("Values", valueJson);
-            elementJson.add("Positions", positionJson);
+                writer.endObject(); // moduleName }
+            }
+            writer.endObject(); // Modules }
 
-            elementsJson.add(element.getName(), elementJson);
-        }
-        rootJson.add("Elements", elementsJson);
+            writer.name("Elements");
+            writer.beginObject(); // "Elements": {
+            for (Element element : Opium.ELEMENT_MANAGER.getElements()) {
+                writer.name(element.getName());
+                writer.beginObject(); // elementName: {
 
-        // Save Client Data
-        JsonObject clientJson = new JsonObject();
-        clientJson.addProperty("Prefix", Opium.COMMAND_MANAGER.getPrefix());
+                writer.name("Name").value(element.getName());
+                writer.name("Status").value(element.isToggled());
 
-        JsonArray friendArray = new JsonArray();
-        for (Friend friend : Opium.FRIEND_MANAGER.getFriends()) {
-            friendArray.add(friend.getName());
-        }
-        clientJson.add("Friends", friendArray);
+                writer.name("Values");
+                writer.beginObject();
+                writeValues(writer, element.getValues());
+                writer.endObject(); // Values }
 
-        rootJson.add("Client", clientJson);
+                // Save position
+                writer.name("Positions");
+                writer.beginObject();
+                writer.name("X").value(element.frame.getX());
+                writer.name("Y").value(element.frame.getY());
+                writer.endObject(); // Positions }
 
-        // Write to the file
-        try (Writer writer = new OutputStreamWriter(Files.newOutputStream(configFilePath), StandardCharsets.UTF_8)) {
-            writer.write(gson.toJson(rootJson));
+                writer.endObject(); // elementName }
+            }
+            writer.endObject(); // Elements }
+
+            writer.name("Client");
+            writer.beginObject(); // Client {
+            writer.name("Prefix").value(Opium.COMMAND_MANAGER.getPrefix());
+
+            // Friends array
+            writer.name("Friends");
+            writer.beginArray();
+            for (Friend friend : Opium.FRIEND_MANAGER.getFriends()) {
+                writer.value(friend.getName());
+            }
+            writer.endArray(); // Friends ]
+
+            writer.endObject(); // Client }
+
+            writer.endObject(); // root }
+
         }
 
         Opium.LOGGER.info("Config saved as: " + configName);
     }
-
 
     public void loadConfig(String configName) throws IOException {
         if (configName == null || configName.isEmpty()) {
@@ -261,91 +253,81 @@ public class ConfigManager {
         Opium.LOGGER.info("Config loaded: " + configName);
     }
 
-
+    private Optional<Module> findModuleByName(String moduleName) {
+        return Opium.MODULE_MANAGER.getModules()
+                .stream()
+                .filter(module -> module.getName().equalsIgnoreCase(moduleName))
+                .findFirst();
+    }
 
     private Optional<Element> findElementByName(String elementName) {
-        // Directly use the stream() method if getElements() returns a List or ArrayList
         return Opium.ELEMENT_MANAGER.getElements()
                 .stream()
                 .filter(element -> element.getName().equalsIgnoreCase(elementName))
                 .findFirst();
     }
 
+    private void writeValues(JsonWriter writer, ArrayList<Value> values) throws IOException {
+        for (Value value : values) {
+            if (value instanceof ValueBoolean) {
+                writer.name(value.getName()).value(((ValueBoolean) value).getValue());
+            } else if (value instanceof ValueNumber) {
+                writer.name(value.getName()).value(((ValueNumber) value).getValue());
+            } else if (value instanceof ValueEnum) {
+                writer.name(value.getName()).value(((ValueEnum) value).getValue().name());
+            } else if (value instanceof ValueString) {
+                writer.name(value.getName()).value(((ValueString) value).getValue());
+            } else if (value instanceof ValueColor vc) {
+                Color color = vc.getValue();
+
+                // same naming scheme as your original code
+                writer.name(value.getName()).value(color.getRGB());
+                writer.name(value.getName() + "-Alpha").value(color.getAlpha());
+                writer.name(value.getName() + "-Rainbow").value(vc.isRainbow());
+                writer.name(value.getName() + "-Sync").value(vc.isSync());
+
+            } else if (value instanceof ValueBind) {
+                writer.name(value.getName()).value(((ValueBind) value).getValue());
+            }
+        }
+    }
 
     private void loadValues(JsonObject valueJson, ArrayList<Value> values) {
         for (Value value : values) {
             JsonElement dataObject = valueJson.get(value.getName());
             if (dataObject == null || !dataObject.isJsonPrimitive()) continue;
-            if (value instanceof ValueBoolean) {
-                ((ValueBoolean) value).setValue(dataObject.getAsBoolean());
-                continue;
-            }
-            if (value instanceof ValueNumber) {
-                if (((ValueNumber) value).getType() == 1) {
-                    ((ValueNumber) value).setValue(dataObject.getAsInt());
-                    continue;
+
+            switch (value) {
+                case ValueBoolean valueBoolean -> valueBoolean.setValue(dataObject.getAsBoolean());
+                case ValueNumber valueNumber -> {
+                    if (valueNumber.getType() == 1) {
+                        ((ValueNumber) value).setValue(dataObject.getAsInt());
+                    } else if (((ValueNumber) value).getType() == 2) {
+                        ((ValueNumber) value).setValue(dataObject.getAsDouble());
+                    } else if (((ValueNumber) value).getType() == 3) {
+                        ((ValueNumber) value).setValue(dataObject.getAsFloat());
+                    }
                 }
-                if (((ValueNumber) value).getType() == 2) {
-                    ((ValueNumber) value).setValue(dataObject.getAsDouble());
-                    continue;
+                case ValueEnum valueEnum -> valueEnum.setValue(valueEnum.getEnum(dataObject.getAsString()));
+                case ValueString valueString -> valueString.setValue(dataObject.getAsString());
+                case ValueColor vc -> {
+                    vc.setValue(new Color(dataObject.getAsInt()));
+                    if (valueJson.get(value.getName() + "-Rainbow") != null) {
+                        vc.setRainbow(valueJson.get(value.getName() + "-Rainbow").getAsBoolean());
+                    }
+                    if (valueJson.get(value.getName() + "-Alpha") != null) {
+                        Color c = vc.getValue();
+                        vc.setValue(new Color(c.getRed(), c.getGreen(), c.getBlue(),
+                                valueJson.get(value.getName() + "-Alpha").getAsInt()));
+                    }
+                    if (valueJson.get(value.getName() + "-Sync") != null) {
+                        vc.setSync(valueJson.get(value.getName() + "-Sync").getAsBoolean());
+                    }
                 }
-                if (((ValueNumber) value).getType() != 3) continue;
-                ((ValueNumber) value).setValue(Float.valueOf(dataObject.getAsFloat()));
-                continue;
-            }
-            if (value instanceof ValueEnum) {
-                ((ValueEnum) value).setValue(((ValueEnum) value).getEnum(dataObject.getAsString()));
-                continue;
-            }
-            if (value instanceof ValueString) {
-                ((ValueString) value).setValue(dataObject.getAsString());
-                continue;
-            }
-            if (value instanceof ValueColor) {
-                ((ValueColor) value).setValue(new Color(dataObject.getAsInt()));
-                if (valueJson.get(value.getName() + "-Rainbow") != null) {
-                    ((ValueColor) value).setRainbow(valueJson.get(value.getName() + "-Rainbow").getAsBoolean());
+                case ValueBind valueBind -> valueBind.setValue(dataObject.getAsInt());
+                default -> {
                 }
-                if (valueJson.get(value.getName() + "-Alpha") != null) {
-                    ((ValueColor) value).setValue(new Color(((ValueColor) value).getValue().getRed(), ((ValueColor) value).getValue().getGreen(), ((ValueColor) value).getValue().getBlue(), valueJson.get(value.getName() + "-Alpha").getAsInt()));
-                }
-                if (valueJson.get(value.getName() + "-Sync") == null) continue;
-                ((ValueColor) value).setSync(valueJson.get(value.getName() + "-Sync").getAsBoolean());
-                continue;
             }
-            if (!(value instanceof ValueBind)) continue;
-            ((ValueBind) value).setValue(dataObject.getAsInt());
         }
     }
-
-    private void saveValues(JsonObject valueJson, ArrayList<Value> values) {
-        for (Value value : values) {
-            if (value instanceof ValueBoolean) {
-                valueJson.add(value.getName(), new JsonPrimitive(((ValueBoolean) value).getValue()));
-                continue;
-            }
-            if (value instanceof ValueNumber) {
-                valueJson.add(value.getName(), new JsonPrimitive(((ValueNumber) value).getValue()));
-                continue;
-            }
-            if (value instanceof ValueEnum) {
-                valueJson.add(value.getName(), new JsonPrimitive(((ValueEnum) value).getValue().name()));
-                continue;
-            }
-            if (value instanceof ValueString) {
-                valueJson.add(value.getName(), new JsonPrimitive(((ValueString) value).getValue()));
-                continue;
-            }
-            if (value instanceof ValueColor) {
-                valueJson.add(value.getName(), new JsonPrimitive(((ValueColor) value).getValue().getRGB()));
-                valueJson.add(value.getName() + "-Alpha", new JsonPrimitive(((ValueColor) value).getValue().getAlpha()));
-                valueJson.add(value.getName() + "-Rainbow", new JsonPrimitive(((ValueColor) value).isRainbow()));
-                valueJson.add(value.getName() + "-Sync", new JsonPrimitive(((ValueColor) value).isSync()));
-                continue;
-            }
-            if (!(value instanceof ValueBind)) continue;
-            valueJson.add(value.getName(), new JsonPrimitive(((ValueBind) value).getValue()));
-        }
-    }
-
 }
