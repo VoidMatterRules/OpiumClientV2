@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CapeManager {
-    private static Identifier currentCape = Identifier.of("opium", "textures/capes/opium.png");
+    private static Identifier currentCape = Identifier.of("opium", "textures/capes/cape.png");
     private static List<Identifier> animatedCapeFrames = new ArrayList<>();
     private static int currentFrame = 0;
     private static long lastFrameTime = 0;
