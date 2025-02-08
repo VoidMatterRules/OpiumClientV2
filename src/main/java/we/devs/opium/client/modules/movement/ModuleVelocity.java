@@ -19,8 +19,8 @@ import we.devs.opium.client.values.impl.ValueNumber;
 
 @RegisterModule(name="Velocity", description="Remove the knockback of the player.", category = Module.Category.MOVEMENT )
 public class ModuleVelocity extends Module {
-    public static ValueBoolean noPush = new ValueBoolean("NoPush", "NoPush", "", false);
-    public static ValueBoolean wallsOnly = new ValueBoolean("Walls", "Walls", "", true);
+    public static ValueBoolean noPush = new ValueBoolean("NoPush", "NoPush", "Players will no longer be able to Push you.", false);
+    public static ValueBoolean wallsOnly = new ValueBoolean("Walls", "Walls", "Only activates the velocity while you are inside of a wall.", false);
     public static ValueBoolean grim = new ValueBoolean("Grim", "Grim", "Bypass for GrimAC v2", false);
     public static ValueNumber horizontal = new ValueNumber("Horizontal", "Horizontal", "", 0.0f, 0.0f, 100.0f);
     public static ValueNumber vertical = new ValueNumber("Vertical", "Vertical", "", 0.0f, 0.0f, 100.0f);

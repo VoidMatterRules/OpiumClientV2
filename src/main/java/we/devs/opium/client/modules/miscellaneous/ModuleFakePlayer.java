@@ -13,19 +13,30 @@ import we.devs.opium.api.utilities.FakePlayerEntity;
         category = Module.Category.MISCELLANEOUS
 )
 public class ModuleFakePlayer extends Module {
-    private FakePlayerEntity fakePlayer;
+    private static ModuleFakePlayer instance;
+    public FakePlayerEntity fakePlayer;
+
+    public ModuleFakePlayer() {
+        instance = this; // Assign the instance to the static field
+    }
+
+    public static ModuleFakePlayer getInstance() {
+        return instance;
+    }
 
     public void onEnable() {
         if (mc.player != null && mc.world != null) {
-            FakePlayerEntity fakePlayer = new FakePlayerEntity(mc.player, "Opium-Fake-Player", 20.0f, true);
-            fakePlayer.spawn();
+            if (fakePlayer == null) {
+                fakePlayer = new FakePlayerEntity(mc.player, "Opium-Fake-Player", 20.0f, true);
+                fakePlayer.spawn();
+            }
         }
     }
 
     public void onDisable() {
-        if (this.fakePlayer != null) {
+        if (fakePlayer != null) {
             this.fakePlayer.despawn();
-            this.fakePlayer = null;
+            fakePlayer = null;
         }
     }
 
