@@ -144,8 +144,6 @@ public class ModuleAntiCrawl extends Module {
         }
     }
 
-
-
     static double easeOutCirc(double n) {
         return Math.sqrt(1 - Math.pow(n - 1, 2));
     }

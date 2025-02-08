@@ -18,6 +18,7 @@ import net.minecraft.util.math.*;
 import net.minecraft.world.RaycastContext;
 import org.joml.Vector3d;
 import we.devs.opium.api.manager.module.RegisterModule;
+import we.devs.opium.api.utilities.RotationsUtil;
 import we.devs.opium.client.values.impl.*;
 
 import java.awt.*;
@@ -53,6 +54,7 @@ public class ModuleCrystalAura extends we.devs.opium.api.manager.module.Module {
     private final ValueBoolean rotate = new ValueBoolean("Rotate", "Rotate", "Sends Rotation Packets to the server.", this.rotations, true);
     private final ValueEnum yawStepMode = new ValueEnum("YawStepMode", "Yaw Step Mode", "Determines when the client does Yaw Steps", this.rotations, YawStepMode.All);
     private final ValueNumber yawSteps = new ValueNumber("YawSteps", "Yaw Steps", "The maximum amount of degrees that the client is allowed to rotate in one tick.", this.rotations, 180.0, 1.0, 360.0);
+    private final ValueBoolean smoothRotations = new ValueBoolean("SmoothRotations", "Smooth Rotations", "Makes the Client send multiple packets to the server for a smoother server side rotations.", this.rotations, false);
 
     // Switch
     private final ValueNumber switchDelay = new ValueNumber("SwitchDelay", "Switch Delay", "The delay in ticks to wait to break a crystal after switching hotbar slot.", this.switchCategory, 0, 0, 20);
@@ -257,14 +259,22 @@ public class ModuleCrystalAura extends we.devs.opium.api.manager.module.Module {
             if (!didRotateThisTick) doBreak();
             if (!didRotateThisTick) doPlace();
         }
-    }
-
-    public void onPreTickLast(we.devs.opium.client.events.TickEvent.Pre event) {
-        // Rotate to last rotation
         if (rotate.getValue() && lastRotationTimer < getLastRotationStopDelay() && !didRotateThisTick) {
-            Rotations.rotate(isLastRotationPos ? Rotations.getYaw(lastRotationPos) : lastYaw, isLastRotationPos ? Rotations.getPitch(lastRotationPos) : lastPitch, -100, null);
+            if (smoothRotations.getValue()) {
+                RotationsUtil.smoothRotate(isLastRotationPos ? lastRotationPos : new Vec3d(lastYaw, lastPitch, 0), 5.0);
+            } else {
+                if (rotate.getValue() && lastRotationTimer < getLastRotationStopDelay() && !didRotateThisTick) {
+                    Vec2f targetRotation = isLastRotationPos
+                            ? RotationsUtil.calculateRotation(lastRotationPos)
+                            : new Vec2f((float) lastYaw, (float) lastPitch);
+
+                    RotationsUtil.setCamRotation(targetRotation.x, targetRotation.y);
+                    RotationsUtil.sendRotationPacket(targetRotation.x, targetRotation.y);
+                }
+            }
         }
     }
+
 
     @EventHandler
     private void onEntityAdded(EntityAddedEvent event) {
@@ -406,12 +416,13 @@ public class ModuleCrystalAura extends we.devs.opium.api.manager.module.Module {
 
             // Break render
             breakRenderPos.set(crystal.getBlockPos().down());
-            breakRenderTimer = breakRenderTime.get();
+            breakRenderTimer = breakRenderTime.getValue().intValue();
         }
     }
 
     private boolean isValidWeaknessItem(ItemStack itemStack) {
-        if (!(itemStack.getItem() instanceof IMiningToolItem) || itemStack.getItem() instanceof HoeItem) return false;
+        if (!(itemStack.getItem() instanceof IMiningToolItem) || itemStack.getItem() instanceof HoeItem)
+            return false;
 
         ToolMaterial material = ((IMiningToolItem) itemStack.getItem()).meteor$getMaterial();
         return material == ToolMaterial.DIAMOND || material == ToolMaterial.NETHERITE;
@@ -674,8 +685,8 @@ public class ModuleCrystalAura extends we.devs.opium.api.manager.module.Module {
             if (EntityUtils.getTotalHealth(target) <= facePlaceHealth.getValue()) return true;
 
             for (ItemStack itemStack : target.getArmorItems()) {
-                    if ((double) (itemStack.getMaxDamage() - itemStack.getDamage()) / itemStack.getMaxDamage() * 100 <= facePlaceDurability.getValue().doubleValue())
-                        return true;
+                if ((double) (itemStack.getMaxDamage() - itemStack.getDamage()) / itemStack.getMaxDamage() * 100 <= facePlaceDurability.getValue().doubleValue())
+                    return true;
 
             }
         }
@@ -781,7 +792,8 @@ public class ModuleCrystalAura extends we.devs.opium.api.manager.module.Module {
             if (!(entities.get().contains(livingEntity.getType()))) continue;
 
             // Close enough to damage
-            if (livingEntity.squaredDistanceTo(mc.player) > targetRange.getValue().doubleValue() * targetRange.getValue().doubleValue()) continue;
+            if (livingEntity.squaredDistanceTo(mc.player) > targetRange.getValue().doubleValue() * targetRange.getValue().doubleValue())
+                continue;
 
             targets.add(livingEntity);
         }

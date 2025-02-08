@@ -122,4 +122,15 @@ public class RotationsUtil {
         }
         sendRotationPacket(rotation.x, rotation.y);
     }
+
+    public static void smoothRotate(Vec3d target, double step) {
+        Vec2f currentRotation = new Vec2f(mc.player.getYaw(), mc.player.getPitch());
+        Vec2f targetRotation = calculateRotation(target);
+
+        float smoothYaw = nextYaw(currentRotation.x, targetRotation.x, step);
+        float smoothPitch = nextPitch(currentRotation.y, targetRotation.y, step);
+
+        setCamRotation(smoothYaw, smoothPitch);
+        sendRotationPacket(smoothYaw, smoothPitch);
+    }
 }
