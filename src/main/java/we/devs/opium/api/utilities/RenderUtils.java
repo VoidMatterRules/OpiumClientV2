@@ -64,6 +64,71 @@ public class RenderUtils implements IMinecraft {
         RenderSystem.enableCull();
     }
 
+    public static void drawRoundedRect(MatrixStack matrices, float x, float y, float width, float height, float radius, Color color) {
+        prepare();
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.TRIANGLE_FAN, VertexFormats.POSITION_COLOR);
+        Matrix4f matrix = matrices.peek().getPositionMatrix();
+
+        // Center of the rounded rectangle
+        float centerX = x + radius;
+        float centerY = y + radius;
+
+        // Draw the rounded rectangle
+        bufferBuilder.vertex(matrix, centerX, centerY, 0.0f).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        for (int i = 0; i <= 90; i++) {
+            double angle = Math.toRadians(i);
+            float dx = (float) (radius * Math.cos(angle));
+            float dy = (float) (radius * Math.sin(angle));
+            bufferBuilder.vertex(matrix, centerX + dx, centerY + dy, 0.0f).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        }
+        for (int i = 90; i <= 180; i++) {
+            double angle = Math.toRadians(i);
+            float dx = (float) (radius * Math.cos(angle));
+            float dy = (float) (radius * Math.sin(angle));
+            bufferBuilder.vertex(matrix, centerX + dx, centerY + dy, 0.0f).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        }
+        for (int i = 180; i <= 270; i++) {
+            double angle = Math.toRadians(i);
+            float dx = (float) (radius * Math.cos(angle));
+            float dy = (float) (radius * Math.sin(angle));
+            bufferBuilder.vertex(matrix, centerX + dx, centerY + dy, 0.0f).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        }
+        for (int i = 270; i <= 360; i++) {
+            double angle = Math.toRadians(i);
+            float dx = (float) (radius * Math.cos(angle));
+            float dy = (float) (radius * Math.sin(angle));
+            bufferBuilder.vertex(matrix, centerX + dx, centerY + dy, 0.0f).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        }
+
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+        release();
+    }
+
+    public static void drawTriangle(MatrixStack matrices, float x, float y, float size, float rotation, Color color) {
+        prepare();
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
+        Matrix4f matrix = matrices.peek().getPositionMatrix();
+
+        // Calculate the vertices of the triangle
+        float angle = (float) Math.toRadians(rotation);
+        float x1 = x + (float) (size * Math.cos(angle));
+        float y1 = y + (float) (size * Math.sin(angle));
+        float x2 = x + (float) (size * Math.cos(angle + Math.toRadians(120)));
+        float y2 = y + (float) (size * Math.sin(angle + Math.toRadians(120)));
+        float x3 = x + (float) (size * Math.cos(angle + Math.toRadians(240)));
+        float y3 = y + (float) (size * Math.sin(angle + Math.toRadians(240)));
+
+        // Draw the triangle
+        bufferBuilder.vertex(matrix, x1, y1, 0.0f).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        bufferBuilder.vertex(matrix, x2, y2, 0.0f).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        bufferBuilder.vertex(matrix, x3, y3, 0.0f).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+        release();
+    }
+
     public static void drawOutline(MatrixStack matrices, float x, float y, float width, float height, float lineWidth, Color color) {
         drawRect(matrices, x + lineWidth, y, x - lineWidth, y + lineWidth, color);
         drawRect(matrices, x + lineWidth, y, width - lineWidth, y + lineWidth, color);
@@ -172,7 +237,6 @@ public class RenderUtils implements IMinecraft {
     public static void stopScaling(MatrixStack matrices) {
         matrices.pop();
     }
-
 
     public static Box getRenderBB(Object position) {
         if (position instanceof BlockPos) {
