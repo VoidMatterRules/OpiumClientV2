@@ -34,6 +34,14 @@ public class ColorUtils implements IMinecraft {
         return new Color(redPart, greenPart, bluePart);
     }
 
+    public static Color interpolate(Color start, Color end, float progress) {
+        int red = (int) (start.getRed() + (end.getRed() - start.getRed()) * progress);
+        int green = (int) (start.getGreen() + (end.getGreen() - start.getGreen()) * progress);
+        int blue = (int) (start.getBlue() + (end.getBlue() - start.getBlue()) * progress);
+        int alpha = (int) (start.getAlpha() + (end.getAlpha() - start.getAlpha()) * progress);
+        return new Color(red, green, blue, alpha);
+    }
+
     public static Color setAlpha(Integer color, float lessThanValue,int changeToAlpha) {
         if (color != null && getAlpha(color) < lessThanValue)
             return new Color(ColorUtils.getRed(color), ColorUtils.getGreen(color), ColorUtils.getBlue(color), changeToAlpha);

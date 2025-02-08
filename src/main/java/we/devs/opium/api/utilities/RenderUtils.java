@@ -47,6 +47,57 @@ public class RenderUtils implements IMinecraft {
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
+    public static void drawRoundedGradientQuad(MatrixStack matrices, Color startColor, Color endColor, float x, float y, float width, float height, float radius, int samples) {
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.TRIANGLE_FAN, VertexFormats.POSITION_COLOR);
+        Matrix4f matrix = matrices.peek().getPositionMatrix();
+
+        // Center of the rounded rectangle
+        float centerX = x + radius;
+        float centerY = y + radius;
+
+        // Draw the rounded rectangle with gradient
+        bufferBuilder.vertex(matrix, centerX, centerY, 0.0f).color(startColor.getRed(), startColor.getGreen(), startColor.getBlue(), startColor.getAlpha());
+        for (int i = 0; i <= 90; i++) {
+            double angle = Math.toRadians(i);
+            float dx = (float) (radius * Math.cos(angle));
+            float dy = (float) (radius * Math.sin(angle));
+            Color color = interpolateColor(startColor, endColor, (float) i / 90);
+            bufferBuilder.vertex(matrix, centerX + dx, centerY + dy, 0.0f).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        }
+        for (int i = 90; i <= 180; i++) {
+            double angle = Math.toRadians(i);
+            float dx = (float) (radius * Math.cos(angle));
+            float dy = (float) (radius * Math.sin(angle));
+            Color color = interpolateColor(startColor, endColor, (float) i / 180);
+            bufferBuilder.vertex(matrix, centerX + dx, centerY + dy, 0.0f).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        }
+        for (int i = 180; i <= 270; i++) {
+            double angle = Math.toRadians(i);
+            float dx = (float) (radius * Math.cos(angle));
+            float dy = (float) (radius * Math.sin(angle));
+            Color color = interpolateColor(startColor, endColor, (float) i / 270);
+            bufferBuilder.vertex(matrix, centerX + dx, centerY + dy, 0.0f).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        }
+        for (int i = 270; i <= 360; i++) {
+            double angle = Math.toRadians(i);
+            float dx = (float) (radius * Math.cos(angle));
+            float dy = (float) (radius * Math.sin(angle));
+            Color color = interpolateColor(startColor, endColor, (float) i / 360);
+            bufferBuilder.vertex(matrix, centerX + dx, centerY + dy, 0.0f).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        }
+
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+    }
+
+    private static Color interpolateColor(Color start, Color end, float progress) {
+        int red = (int) (start.getRed() + (end.getRed() - start.getRed()) * progress);
+        int green = (int) (start.getGreen() + (end.getGreen() - start.getGreen()) * progress);
+        int blue = (int) (start.getBlue() + (end.getBlue() - start.getBlue()) * progress);
+        int alpha = (int) (start.getAlpha() + (end.getAlpha() - start.getAlpha()) * progress);
+        return new Color(red, green, blue, alpha);
+    }
+
     public static void drawRect(MatrixStack matrices, float x, float y, float width, float height, Color color) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
@@ -65,7 +116,6 @@ public class RenderUtils implements IMinecraft {
     }
 
     public static void drawRoundedRect(MatrixStack matrices, float x, float y, float width, float height, float radius, Color color) {
-        prepare();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.TRIANGLE_FAN, VertexFormats.POSITION_COLOR);
         Matrix4f matrix = matrices.peek().getPositionMatrix();
@@ -102,7 +152,6 @@ public class RenderUtils implements IMinecraft {
         }
 
         BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-        release();
     }
 
     public static void drawTriangle(MatrixStack matrices, float x, float y, float size, float rotation, Color color) {
@@ -130,7 +179,6 @@ public class RenderUtils implements IMinecraft {
     }
 
     public static void drawOutline(MatrixStack matrices, float x, float y, float width, float height, float lineWidth, Color color) {
-        prepare();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
         Matrix4f matrix = matrices.peek().getPositionMatrix();
@@ -152,11 +200,9 @@ public class RenderUtils implements IMinecraft {
         bufferBuilder.vertex(matrix, x, y, 0).color(r, g, b, a); // Close the loop
 
         BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-        release();
     }
 
     public static void drawOutline(MatrixStack matrices, float x, float y, float width, float height, float lineWidth, float radius, Color color) {
-        prepare();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
         Matrix4f matrix = matrices.peek().getPositionMatrix();
@@ -208,7 +254,6 @@ public class RenderUtils implements IMinecraft {
         bufferBuilder.vertex(matrix, x + width - radius, y, 0).color(r, g, b, a);
 
         BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-        release();
     }
 
     public static void drawSidewaysGradient(MatrixStack matrices, float x, float y, float width, float height, Color startColor, Color endColor) {
@@ -239,13 +284,15 @@ public class RenderUtils implements IMinecraft {
         double degree = Math.PI / 180;
         for (double i = 0; i <= 90; i += 1) {
             double v = Math.sin(i * degree) * radius;
-            bufferBuilder.vertex((float) (x + v), (float) (y + (Math.cos(i * degree) * radius)), 0.0F);
-            bufferBuilder.vertex((float) (x + v), (float) (y - (Math.cos(i * degree) * radius)), 0.0F);
-            bufferBuilder.vertex((float) (x - v), (float) (y - (Math.cos(i * degree) * radius)), 0.0F);
-            bufferBuilder.vertex((float) (x - v), (float) (y + (Math.cos(i * degree) * radius)), 0.0F);
+            double v1 = Math.cos(i * degree) * radius;
+            bufferBuilder.vertex((float) (x + v), (float) (y + v1), 0.0F);
+            bufferBuilder.vertex((float) (x + v), (float) (y - v1), 0.0F);
+            bufferBuilder.vertex((float) (x - v), (float) (y - v1), 0.0F);
+            bufferBuilder.vertex((float) (x - v), (float) (y + v1), 0.0F);
         }
         BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
         RenderSystem.setShaderColor(1, 1, 1, 1);
+
         RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();
     }

@@ -64,6 +64,15 @@ public class Component implements IMinecraft {
         return this.parent.getY() + this.offset;
     }
 
+    /**
+     * Sets the Y position of the component by adjusting its offset.
+     *
+     * @param y The desired Y position.
+     */
+    public void setY(int y) {
+        this.offset = y - this.parent.getY();
+    }
+
     public int getWidth() {
         return this.width;
     }

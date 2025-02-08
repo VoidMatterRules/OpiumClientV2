@@ -110,7 +110,8 @@ public class Frame implements IMinecraft {
                     samples
             );
             if (ModuleOutline.INSTANCE.categoryTitleOutline.getValue()) {
-                Renderer2d.renderRoundedOutline(context.getMatrices(), ModuleOutline.INSTANCE.categoryTitleOutlineColor.getValue(), this.getX() - 2 + outlineW, this.getY() - 3 + outlineW, this.getX() + this.getWidth() + 2 - outlineW, this.getY() + 13 - outlineW, radius, radius, 0, 0, outlineW, samples * 4);
+                //Renderer2d.renderRoundedOutline(context.getMatrices(), ModuleOutline.INSTANCE.categoryTitleOutlineColor.getValue(), this.getX() - 2 + outlineW, this.getY() - 3 + outlineW, this.getX() + this.getWidth() + 2 - outlineW, this.getY() + 13 - outlineW, radius, radius, 0, 0, outlineW, samples * 4);
+                RenderUtils.drawOutline(context.getMatrices(),this.getX() - 2 + outlineW, this.getY() - 3 + outlineW, this.getX() + this.getWidth() + 2 - outlineW, this.getY() + 13 - outlineW,outlineW,radius, ModuleOutline.INSTANCE.categoryTitleOutlineColor.getValue());
             }
         } else {
             RenderUtils.drawRect(context.getMatrices(), this.getX() - 2, this.getY() - 3, this.getX() + this.getWidth() + 2, this.getY() + 13, ModuleGUI.INSTANCE.categoryTitleColor.getValue());
