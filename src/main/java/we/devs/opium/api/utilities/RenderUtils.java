@@ -130,11 +130,85 @@ public class RenderUtils implements IMinecraft {
     }
 
     public static void drawOutline(MatrixStack matrices, float x, float y, float width, float height, float lineWidth, Color color) {
-        drawRect(matrices, x + lineWidth, y, x - lineWidth, y + lineWidth, color);
-        drawRect(matrices, x + lineWidth, y, width - lineWidth, y + lineWidth, color);
-        drawRect(matrices, x, y, x + lineWidth, height, color);
-        drawRect(matrices, width - lineWidth, y, width, height, color);
-        drawRect(matrices, x + lineWidth, height - lineWidth, width - lineWidth, height, color);
+        prepare();
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
+        Matrix4f matrix = matrices.peek().getPositionMatrix();
+
+        // Set line width and color
+        RenderSystem.lineWidth(lineWidth);
+        float r = color.getRed() / 255f;
+        float g = color.getGreen() / 255f;
+        float b = color.getBlue() / 255f;
+        float a = color.getAlpha() / 255f;
+
+        // Define outline coordinates with proper alignment
+
+        // Draw rectangle outline
+        bufferBuilder.vertex(matrix, x, y, 0).color(r, g, b, a);
+        bufferBuilder.vertex(matrix, width, y, 0).color(r, g, b, a);
+        bufferBuilder.vertex(matrix, width, height, 0).color(r, g, b, a);
+        bufferBuilder.vertex(matrix, x, height, 0).color(r, g, b, a);
+        bufferBuilder.vertex(matrix, x, y, 0).color(r, g, b, a); // Close the loop
+
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+        release();
+    }
+
+    public static void drawOutline(MatrixStack matrices, float x, float y, float width, float height, float lineWidth, float radius, Color color) {
+        prepare();
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
+        Matrix4f matrix = matrices.peek().getPositionMatrix();
+
+        RenderSystem.lineWidth(lineWidth);
+        float r = color.getRed() / 255f;
+        float g = color.getGreen() / 255f;
+        float b = color.getBlue() / 255f;
+        float a = color.getAlpha() / 255f;
+
+        // Calculate rounded corners
+        float right = x + width;
+        float bottom = y + height;
+        int segments = 10;
+
+        // Top right corner
+        for(int i = 0; i <= segments; i++) {
+            float angle = (float) (Math.PI * 1.5 + (Math.PI * i) / (segments * 2));
+            bufferBuilder.vertex(matrix, x + width - radius + (float) Math.cos(angle) * radius,
+                            y + radius + (float) Math.sin(angle) * radius, 0)
+                    .color(r, g, b, a);
+        }
+
+        // Bottom right corner
+        for(int i = 0; i <= segments; i++) {
+            float angle = (float) (Math.PI * 0.0 + (Math.PI * i) / (segments * 2));
+            bufferBuilder.vertex(matrix, x + width - radius + (float) Math.cos(angle) * radius,
+                            y + height - radius + (float) Math.sin(angle) * radius, 0)
+                    .color(r, g, b, a);
+        }
+
+        // Bottom left corner
+        for(int i = 0; i <= segments; i++) {
+            float angle = (float) (Math.PI * 0.5 + (Math.PI * i) / (segments * 2));
+            bufferBuilder.vertex(matrix, x + radius + (float) Math.cos(angle) * radius,
+                            y + height - radius + (float) Math.sin(angle) * radius, 0)
+                    .color(r, g, b, a);
+        }
+
+        // Top left corner
+        for(int i = 0; i <= segments; i++) {
+            float angle = (float) (Math.PI * 1.0 + (Math.PI * i) / (segments * 2));
+            bufferBuilder.vertex(matrix, x + radius + (float) Math.cos(angle) * radius,
+                            y + radius + (float) Math.sin(angle) * radius, 0)
+                    .color(r, g, b, a);
+        }
+
+        // Close the loop
+        bufferBuilder.vertex(matrix, x + width - radius, y, 0).color(r, g, b, a);
+
+        BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
+        release();
     }
 
     public static void drawSidewaysGradient(MatrixStack matrices, float x, float y, float width, float height, Color startColor, Color endColor) {
@@ -164,10 +238,11 @@ public class RenderUtils implements IMinecraft {
         RenderSystem.setShaderColor(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha() / 255f);
         double degree = Math.PI / 180;
         for (double i = 0; i <= 90; i += 1) {
-            bufferBuilder.vertex((float) (x + (Math.sin(i * degree) * radius)), (float) (y + (Math.cos(i * degree) * radius)), 0.0F);
-            bufferBuilder.vertex((float) (x + (Math.sin(i * degree) * radius)), (float) (y - (Math.cos(i * degree) * radius)), 0.0F);
-            bufferBuilder.vertex((float) (x - (Math.sin(i * degree) * radius)), (float) (y - (Math.cos(i * degree) * radius)), 0.0F);
-            bufferBuilder.vertex((float) (x - (Math.sin(i * degree) * radius)), (float) (y + (Math.cos(i * degree) * radius)), 0.0F);
+            double v = Math.sin(i * degree) * radius;
+            bufferBuilder.vertex((float) (x + v), (float) (y + (Math.cos(i * degree) * radius)), 0.0F);
+            bufferBuilder.vertex((float) (x + v), (float) (y - (Math.cos(i * degree) * radius)), 0.0F);
+            bufferBuilder.vertex((float) (x - v), (float) (y - (Math.cos(i * degree) * radius)), 0.0F);
+            bufferBuilder.vertex((float) (x - v), (float) (y + (Math.cos(i * degree) * radius)), 0.0F);
         }
         BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
         RenderSystem.setShaderColor(1, 1, 1, 1);
