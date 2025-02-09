@@ -286,9 +286,9 @@ public class ModuleCrystalAura extends we.devs.opium.api.manager.module.Module {
             placedCrystals.add(event.entity.getId());
         }
 
-        if (fastBreak.get() && !didRotateThisTick && attacks < attackFrequency.get()) {
+        if (fastBreak.getValue() && !didRotateThisTick && attacks < attackFrequency.) {
             float damage = getBreakDamage(event.entity, true);
-            if (damage > minDamage.get()) doBreak(event.entity);
+            if (damage > minDamage.getValue().floatValue()) doBreak(event.entity);
         }
     }
 
