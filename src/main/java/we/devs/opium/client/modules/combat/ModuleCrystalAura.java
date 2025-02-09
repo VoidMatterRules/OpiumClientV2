@@ -18,6 +18,7 @@ import net.minecraft.util.math.*;
 import net.minecraft.world.RaycastContext;
 import org.joml.Vector3d;
 import we.devs.opium.api.manager.module.RegisterModule;
+import we.devs.opium.api.utilities.RotationUtils;
 import we.devs.opium.api.utilities.RotationsUtil;
 import we.devs.opium.client.values.impl.*;
 
@@ -392,8 +393,8 @@ public class ModuleCrystalAura extends we.devs.opium.api.manager.module.Module {
         boolean attacked = true;
 
         if (rotate.getValue()) {
-            double yaw = Rotations.getYaw(crystal);
-            double pitch = Rotations.getPitch(crystal, Target.Feet);
+            double yaw = RotationUtils.getYaw(crystal);
+            double pitch = RotationUtils.getPitch(crystal);
 
             if (doYawSteps(yaw, pitch)) {
                 setRotation(true, crystal.getPos(), 0, 0);
@@ -541,8 +542,8 @@ public class ModuleCrystalAura extends we.devs.opium.api.manager.module.Module {
             );
 
             if (rotate.getValue()) {
-                double yaw = Rotations.getYaw(vec3d);
-                double pitch = Rotations.getPitch(vec3d);
+                double yaw = RotationUtils.getYaw(vec3d);
+                double pitch = RotationUtils.getPitch(vec3d);
 
                 if (yawStepMode.getValue().equals(YawStepMode.Break) || doYawSteps(yaw, pitch)) {
                     setRotation(true, vec3d, 0, 0);

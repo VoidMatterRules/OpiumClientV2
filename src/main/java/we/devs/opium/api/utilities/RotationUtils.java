@@ -77,6 +77,19 @@ public class RotationUtils implements IMinecraft {
         return mc.player.getPitch() + MathHelper.wrapDegrees((float) -Math.toDegrees(Math.atan2(diffY, diffXZ)) - mc.player.getPitch());
     }
 
+    public static double getPitch(Entity entity) {
+        double y;
+        y = entity.getY();
+
+        double diffX = entity.getX() - mc.player.getX();
+        double diffY = y - (mc.player.getY() + mc.player.getEyeHeight(mc.player.getPose()));
+        double diffZ = entity.getZ() - mc.player.getZ();
+
+        double diffXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
+
+        return mc.player.getPitch() + MathHelper.wrapDegrees((float) -Math.toDegrees(Math.atan2(diffY, diffXZ)) - mc.player.getPitch());
+    }
+
     public static float[] getRotationsTo(Vec3d dest) {
         float yaw = (float) (Math.toDegrees(Math.atan2(dest.subtract(mc.player.getEyePos()).z,
                 dest.subtract(mc.player.getEyePos()).x)) - 90);
