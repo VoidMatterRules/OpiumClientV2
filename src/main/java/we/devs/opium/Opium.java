@@ -21,6 +21,7 @@ import we.devs.opium.api.manager.music.MusicDownloader;
 import we.devs.opium.api.utilities.TPSUtils;
 import we.devs.opium.api.utilities.dump.AntiDump;
 import we.devs.opium.client.events.EventTick;
+import we.devs.opium.client.gui.GamblingScreen;
 import we.devs.opium.client.gui.click.ClickGuiScreen;
 import we.devs.opium.client.gui.config.ConfigManagerScreen;
 import we.devs.opium.client.gui.hud.HudEditorScreen;
@@ -56,6 +57,7 @@ public class Opium implements ModInitializer {
     public static ClickGuiScreen CLICK_GUI;
     public static HudEditorScreen HUD_EDITOR;
     public static ConfigManagerScreen CONFIG_MANAGER_SCREEN;
+    public static GamblingScreen GAMBLING_SCREEN;
     public static ConfigManager CONFIG_MANAGER;
     public static FontManager FONT_MANAGER;
     public static final Timer TIMER = new Timer("Timer", true);
@@ -101,6 +103,7 @@ public class Opium implements ModInitializer {
         ELEMENT_MANAGER = new ElementManager();
         PLAYER_MANAGER = new PlayerManager();
         CONFIG_MANAGER = new ConfigManager();
+        GAMBLING_SCREEN = new GamblingScreen();
 
         LOGGER.info("Managers loaded successfully!");
 
