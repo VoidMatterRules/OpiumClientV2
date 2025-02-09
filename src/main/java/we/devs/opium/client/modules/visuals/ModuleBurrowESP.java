@@ -1,6 +1,9 @@
 package we.devs.opium.client.modules.visuals;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.joml.Vector4d;
@@ -9,6 +12,7 @@ import we.devs.opium.api.manager.module.RegisterModule;
 import we.devs.opium.client.events.EventRender2D;
 import we.devs.opium.client.values.impl.ValueColor;
 import we.devs.opium.client.values.impl.ValueNumber;
+import we.devs.opium.client.values.impl.ValueEnum;
 
 import java.awt.*;
 
@@ -21,6 +25,7 @@ public class ModuleBurrowESP extends Module {
     private final ValueNumber minScale = new ValueNumber("MinScale", "MinScale", "MinScale", 0.2f, 0.1f, 1f);
     private final ValueNumber yOff = new ValueNumber("YOffset", "YOffset", "Text y offset", 0.1f, -0.5, 0.5);
     private final ValueColor color = new ValueColor("TextColor", "TextColor", "TextColor", Color.WHITE);
+    private final ValueEnum renderPosition = new ValueEnum("RenderPosition", "RenderPosition", "Determines if the Text is being rendered on the Block or the Player.", renderModes.BlockPos);
 
     @Override
     public void onRender2D(EventRender2D context) {
@@ -29,7 +34,7 @@ public class ModuleBurrowESP extends Module {
 
         for (PlayerEntity ent : mc.world.getPlayers()) {
             if (ent == mc.player && mc.options.getPerspective().isFirstPerson()) continue;
-            if (mc.world.getBlockState(ent.getBlockPos()).isReplaceable()) continue;
+            if (!isBurrowBlock(ent.getBlockPos())) continue;
 
             // Interpolated Position Calculation
             double x = ent.prevX + (ent.getX() - ent.prevX) * tickDelta;
@@ -59,5 +64,15 @@ public class ModuleBurrowESP extends Module {
             context.getContext().drawText(mc.textRenderer, text, (int) -(textWidth / 2), 0, color.getValue().getRGB(), true);
             context.getContext().getMatrices().pop();
         }
+    }
+
+    private boolean isBurrowBlock(BlockPos pos) {
+        Block block = mc.world.getBlockState(pos).getBlock();
+        return block == Blocks.OBSIDIAN || block == Blocks.ENDER_CHEST || block == Blocks.BEDROCK;
+    }
+
+    public enum renderModes {
+        BlockPos,
+        PlayerPos
     }
 }
