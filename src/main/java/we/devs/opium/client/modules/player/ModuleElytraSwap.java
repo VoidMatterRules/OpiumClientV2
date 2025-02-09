@@ -10,6 +10,7 @@ import we.devs.opium.api.utilities.ChatUtils;
 import we.devs.opium.api.utilities.InventoryUtils;
 import we.devs.opium.client.values.impl.ValueBoolean;
 import we.devs.opium.client.values.impl.ValueNumber;
+import we.devs.opium.client.values.impl.ValueEnum;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -19,8 +20,9 @@ import java.util.concurrent.TimeUnit;
 public class ModuleElytraSwap extends Module {
 
     private final ValueBoolean autoFirework = new ValueBoolean("AutoFirework", "Auto Firework", "Automatically uses a Firework when switching to an Elytra", true);
-    private final ValueBoolean useInvFirework = new ValueBoolean("InventoryFireWork", "Inventory Firework", "Automatically uses a Firework from your inv and uses it over offhand", true);
+    private final ValueEnum switchMode = new ValueEnum("SwitchMode", "Switch Mode", "Switch Modes", switchModes.Silent);
     private final ValueNumber delay = new ValueNumber("CustomDelay", "Custom Delay", "Delay between the first jump and the second one to activate the Elytra.", 4, 1, 8);
+
 
     @Override
     public void onEnable() {
@@ -30,7 +32,7 @@ public class ModuleElytraSwap extends Module {
         }
 
         int fireworkSlot;
-        if (useInvFirework.getValue()) {
+        if (switchMode.getValue().equals(switchModes.InvSwitch)) {
             fireworkSlot = InventoryUtils.findItem(Items.FIREWORK_ROCKET, 0, 36);
         } else fireworkSlot = InventoryUtils.findItem(Items.FIREWORK_ROCKET, 0, 8);
 
@@ -65,12 +67,16 @@ public class ModuleElytraSwap extends Module {
                 scheduler.schedule(() -> mc.execute(() -> {
                     mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
 
-                    if (!useInvFirework.getValue()) {
+                    if (!switchMode.getValue().equals(switchModes.InvSwitch) && switchMode.getValue().equals(switchModes.Silent)) {
                         // Use firework from hotbar
                         InventoryUtils.switchToSlot(fireworkSlot, true, () -> {
                             InventoryUtils.itemUsage(Hand.MAIN_HAND);
                         });
-                    } else {
+                    } else if (switchMode.getValue().equals(switchModes.Strict)){
+                        InventoryUtils.switchToSlot(fireworkSlot, false, () -> {
+                            InventoryUtils.itemUsage(Hand.MAIN_HAND);
+                        });
+                }else {
                         // Use firework from inventory
                         InventoryUtils.useItemInOffhand(Items.FIREWORK_ROCKET);
                     }
@@ -114,5 +120,11 @@ public class ModuleElytraSwap extends Module {
         else if (item.equals(Items.DIAMOND_CHESTPLATE)) return 5;
         else if (item.equals(Items.NETHERITE_CHESTPLATE)) return 6;
         return -1;
+    }
+
+    public enum switchModes {
+        Silent,
+        Strict,
+        InvSwitch
     }
 }
