@@ -37,4 +37,28 @@ public class MathUtils {
     public static float normalize(float value, float min, float max) {
         return (value - min) / (max - min);
     }
+
+    /**
+     * Linear interpolation between two values.
+     *
+     * @param start The starting value.
+     * @param end   The ending value.
+     * @param t     The interpolation factor (0 = start, 1 = end).
+     * @return The interpolated value.
+     */
+    public static float lerp(float start, float end, float t) {
+        return start + (end - start) * t;
+    }
+
+    /**
+     * Linear interpolation between two values.
+     *
+     * @param start The starting value.
+     * @param end   The ending value.
+     * @param t     The interpolation factor (0 = start, 1 = end).
+     * @return The interpolated value.
+     */
+    public static double lerp(double start, double end, double t) {
+        return start + (end - start) * t;
+    }
 }
