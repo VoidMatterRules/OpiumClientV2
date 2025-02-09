@@ -18,7 +18,7 @@ import we.devs.opium.client.values.impl.ValueNumber;
 @RegisterModule(name = "Speed", description = "Speeds your movement up.", category = Module.Category.MOVEMENT)
 public class ModuleSpeed extends Module {
     ValueEnum mode = new ValueEnum("Mode", "Mode", "", modes.Strafe);
-    ValueNumber speed = new ValueNumber("Speed", "Speed", "Speed", 2.0f, 1.0f, 10.0f);
+    ValueNumber speed = new ValueNumber("Speed", "Speed", "Speed", 1.5f, 1.0f, 2.0f);
 
     @Override
     public void onPlayerMove(PlayerMoveEvent event) {

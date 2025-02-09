@@ -65,7 +65,6 @@ public class ModuleManager implements IMinecraft, EventListener {
         this.register(new ModuleMiddleClick());
         this.register(new ModuleWelcomer());
         this.register(new ModuleFakeDuelMessage());
-        this.register(new ModuleAutoEZ());
 
         //Movement
         this.register(new InstantSpeed());
@@ -77,7 +76,6 @@ public class ModuleManager implements IMinecraft, EventListener {
         this.register(new ModuleNoSlow());
 
         //Player
-        this.register(new ModuleMultiTask());
         this.register(new ModuleElytraSwap());
         this.register(new ModuleFastPlace());
         this.register(new CxMine());

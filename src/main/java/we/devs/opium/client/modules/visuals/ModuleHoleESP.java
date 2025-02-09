@@ -35,15 +35,26 @@ public class ModuleHoleESP extends Module {
         return new ValueColor(name, name, name, render, defaultC);
     }
 
+    private boolean disable;
+
+    @Override
+    public void onEnable() {
+        super.onEnable();
+        disable = false;
+    }
+
     @Override
     public void onTick(EventTick event) {
-        FastHoleUtil.INSTANCE.onTick(event);
+        if (!disable){
+            FastHoleUtil.INSTANCE.onTick(event);
+        }
     }
 
     @Override
     public void onRender3D(EventRender3D event) {
         for (FastHoleUtil.Hole hole : FastHoleUtil.holes) {
-            if(hole.safety() == FastHoleUtil.HoleSafety.UNSAFE || Vec3d.of(hole.air().get(0)).distanceTo(mc.player.getPos()) > range.getValue().doubleValue()) continue;
+            if (hole.safety() == FastHoleUtil.HoleSafety.UNSAFE || Vec3d.of(hole.air().get(0)).distanceTo(mc.player.getPos()) > range.getValue().doubleValue())
+                continue;
             Color fill = switch (hole.safety()) {
                 case UNBREAKABLE -> safeFill.getValue();
                 case PARTIALLY_UNBREAKABLE -> mixedFill.getValue();
@@ -68,6 +79,11 @@ public class ModuleHoleESP extends Module {
                 }
             }
         }
+    }
+
+    public void onDisable() {
+        super.onDisable();
+        disable = true;
     }
 
     Color injectAlpha(Color color) {
