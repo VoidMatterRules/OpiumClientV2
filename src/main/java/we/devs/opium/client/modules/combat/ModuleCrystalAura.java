@@ -20,6 +20,7 @@ import org.joml.Vector3d;
 import we.devs.opium.api.manager.module.RegisterModule;
 import we.devs.opium.api.utilities.RotationUtils;
 import we.devs.opium.api.utilities.RotationsUtil;
+import we.devs.opium.client.events.EventRender2D;
 import we.devs.opium.client.values.impl.*;
 
 import java.awt.*;
@@ -69,7 +70,7 @@ public class ModuleCrystalAura extends we.devs.opium.api.manager.module.Module {
     private final ValueNumber placeRange = new ValueNumber("PlaceRange", "Place Range", "Range from the Player in which to place crystals.", this.placeCategory, 4.5, 0.0, 6.0);
     private final ValueNumber placeWallsRange = new ValueNumber("WallsRange", "Walls Range", "Range in which to place crystals if Blocks are in the Way.", this.placeCategory, 4.5, 0, 6);
     private final ValueBoolean placement112 = new ValueBoolean("OldPlacements", "Old Placements", "Uses pre 1.13 Crystal Placements", this.placeCategory, false);
-    private final ValueEnum support = new ValueEnum("Support", "Support", "Places support blocks if no Possible Position has been found.", this.placeCategory, SupportMode.Disabled);
+    private final ValueEnum support = new ValueEnum("Support", "Support", "Places support blocks if no Possible Position has been found.", this.placeCategory, SupportMode.Accurate);
     private final ValueNumber supportDelay = new ValueNumber("SupportDelay", "Support Delay", "Delay in ticks after placing support block.", this.placeCategory, 1, 0, 20);
 
     // Face place
@@ -109,6 +110,7 @@ public class ModuleCrystalAura extends we.devs.opium.api.manager.module.Module {
     private final ValueColor sideColor = new ValueColor("SideColor", "Side Color", "The side color of the block overlay.", this.render, new java.awt.Color(255, 255, 255, 45));
     private final ValueColor lineColor = new ValueColor("LineColor", "Line Color", "The line color of the block overlay.", this.render, new java.awt.Color(255, 255, 255, 45));
     private final ValueBoolean renderDamageText = new ValueBoolean("Damage", "Damage", "Renders crystal damage text in the block overlay.", this.render, true);
+    private final ValueColor damageColor = new ValueColor("DamageColor", "Damage Color", "The color of the damage text.", this.render, new java.awt.Color(255, 255, 255, 125));
     private final ValueNumber damageTextScale = new ValueNumber("DamageScale", "Damage Scale", "How big the damage text should be.", this.render, 1.25, 1.0, 4.0);
 
     // Fields
@@ -739,7 +741,7 @@ public class ModuleCrystalAura extends we.devs.opium.api.manager.module.Module {
         if (fast) {
             LivingEntity target = getNearestTarget();
             if (!(smartDelay.getValue() && breaking && target.hurtTime > 0))
-                damage = DamageUtils.crystalDamage(target, vec3d, predictMovement.get(), obsidianPos);
+                damage = DamageUtils.crystalDamage(target, vec3d, predictMovement.getValue(), obsidianPos);
         } else {
             for (LivingEntity target : targets) {
                 if (smartDelay.getValue() && breaking && target.hurtTime > 0) continue;
@@ -852,46 +854,46 @@ public class ModuleCrystalAura extends we.devs.opium.api.manager.module.Module {
                 int y = placeRenderPos.getY() + 1;
                 int z = placeRenderPos.getZ();
 
-                if (shapeMode.getValue().sides()) {
-                    event.renderer.quadHorizontal(x, y, z, x + 1, z + 1, sideColor.get());
-                    event.renderer.gradientQuadVertical(x, y, z, x + 1, y - height.get(), z, bottom, sideColor.get());
-                    event.renderer.gradientQuadVertical(x, y, z, x, y - height.get(), z + 1, bottom, sideColor.get());
-                    event.renderer.gradientQuadVertical(x + 1, y, z, x + 1, y - height.get(), z + 1, bottom, sideColor.get());
-                    event.renderer.gradientQuadVertical(x, y, z + 1, x + 1, y - height.get(), z + 1, bottom, sideColor.get());
+                if (shapeMode.getValue().equals(ShapeMode.Sides)) {
+                    event.renderer.quadHorizontal(x, y, z, x + 1, z + 1, sideColor.getValue());
+                    event.renderer.gradientQuadVertical(x, y, z, x + 1, y - height.getValue().intValue(), z, bottom, sideColor.getValue());
+                    event.renderer.gradientQuadVertical(x, y, z, x, y - height.getValue().intValue(), z + 1, bottom, sideColor.getValue());
+                    event.renderer.gradientQuadVertical(x + 1, y, z, x + 1, y - height.getValue().intValue(), z + 1, bottom, sideColor.getValue());
+                    event.renderer.gradientQuadVertical(x, y, z + 1, x + 1, y - height.getValue().intValue(), z + 1, bottom, sideColor.getValue());
                 }
 
-                if (shapeMode.getValue().lines()) {
-                    event.renderer.line(x, y, z, x + 1, y, z, lineColor.get());
-                    event.renderer.line(x, y, z, x, y, z + 1, lineColor.get());
-                    event.renderer.line(x + 1, y, z, x + 1, y, z + 1, lineColor.get());
-                    event.renderer.line(x, y, z + 1, x + 1, y, z + 1, lineColor.get());
+                if (shapeMode.getValue().equals(ShapeMode.Lines)) {
+                    event.renderer.line(x, y, z, x + 1, y, z, lineColor.getValue());
+                    event.renderer.line(x, y, z, x, y, z + 1, lineColor.getValue());
+                    event.renderer.line(x + 1, y, z, x + 1, y, z + 1, lineColor.getValue());
+                    event.renderer.line(x, y, z + 1, x + 1, y, z + 1, lineColor.getValue());
 
-                    event.renderer.line(x, y, z, x, y - height.get(), z, lineColor.get(), bottom);
-                    event.renderer.line(x + 1, y, z, x + 1, y - height.get(), z, lineColor.get(), bottom);
-                    event.renderer.line(x, y, z + 1, x, y - height.get(), z + 1, lineColor.get(), bottom);
-                    event.renderer.line(x + 1, y, z + 1, x + 1, y - height.get(), z + 1, lineColor.get(), bottom);
+                    event.renderer.line(x, y, z, x, y - height.getValue().intValue(), z, lineColor.getValue(), bottom);
+                    event.renderer.line(x + 1, y, z, x + 1, y - height.getValue().intValue(), z, lineColor.getValue(), bottom);
+                    event.renderer.line(x, y, z + 1, x, y - height.getValue().intValue(), z + 1, lineColor.getValue(), bottom);
+                    event.renderer.line(x + 1, y, z + 1, x + 1, y - height.getValue().intValue(), z + 1, lineColor.getValue(), bottom);
                 }
             }
         }
     }
 
-    @EventHandler
-    private void onRender2D(Render2DEvent event) {
-        if (renderMode.get() == RenderMode.None || !renderDamageText.get()) return;
+    @Override
+    public void onRender2D(EventRender2D event) {
+        if (renderMode.getValue() == RenderMode.None || !renderDamageText.getValue()) return;
         if (placeRenderTimer <= 0 && breakRenderTimer <= 0) return;
 
-        if (renderMode.get() == RenderMode.Smooth) {
+        if (renderMode.getValue() == RenderMode.Smooth) {
             if (renderBoxOne == null) return;
             vec3.set(renderBoxOne.minX + 0.5, renderBoxOne.minY + 0.5, renderBoxOne.minZ + 0.5);
         } else vec3.set(placeRenderPos.getX() + 0.5, placeRenderPos.getY() + 0.5, placeRenderPos.getZ() + 0.5);
 
-        if (NametagUtils.to2D(vec3, damageTextScale.get())) {
+        if (NametagUtils.to2D(vec3, damageTextScale.getValue())) {
             NametagUtils.begin(vec3);
             TextRenderer.get().begin(1, false, true);
 
             String text = String.format("%.1f", renderDamage);
             double w = TextRenderer.get().getWidth(text) / 2;
-            TextRenderer.get().render(text, -w, 0, damageColor.get(), true);
+            TextRenderer.get().render(text, -w, 0, damageColor.getValue(), true);
 
             TextRenderer.get().end();
             NametagUtils.end();
