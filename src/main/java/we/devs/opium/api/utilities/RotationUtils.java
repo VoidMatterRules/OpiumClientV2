@@ -133,7 +133,7 @@ public class RotationUtils implements IMinecraft {
 
 
     public static float[] getRotationsEntity(Entity entity) {
-        return RotationUtils.getRotations(entity.getX(), entity.getY() + (double) entity.getEyeHeight(entity.getPose()) - 0.4, entity.getZ());
+        return getRotations(entity.getX(), entity.getY() + (double) entity.getEyeHeight(entity.getPose()) - 0.4, entity.getZ());
     }
 
     public static void rotate(EventMotion event, float[] angle) {

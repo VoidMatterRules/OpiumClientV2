@@ -18,6 +18,7 @@ import we.devs.opium.api.manager.miscellaneous.UUIDManager;
 import we.devs.opium.api.manager.module.ModuleManager;
 import we.devs.opium.api.manager.music.CustomSoundEngineManager;
 import we.devs.opium.api.manager.music.MusicDownloader;
+import we.devs.opium.api.manager.rotation.RotationManager;
 import we.devs.opium.api.utilities.TPSUtils;
 import we.devs.opium.api.utilities.dump.AntiDump;
 import we.devs.opium.client.events.EventTick;
@@ -60,6 +61,7 @@ public class Opium implements ModInitializer {
     public static GamblingScreen GAMBLING_SCREEN;
     public static ConfigManager CONFIG_MANAGER;
     public static FontManager FONT_MANAGER;
+    public static RotationManager ROTATION_MANAGER;
     public static final Timer TIMER = new Timer("Timer", true);
     public static MinecraftClient mc;
     boolean iconSet = false;
@@ -104,6 +106,7 @@ public class Opium implements ModInitializer {
         PLAYER_MANAGER = new PlayerManager();
         CONFIG_MANAGER = new ConfigManager();
         GAMBLING_SCREEN = new GamblingScreen();
+        ROTATION_MANAGER = new RotationManager();
 
         LOGGER.info("Managers loaded successfully!");
 

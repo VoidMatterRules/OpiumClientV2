@@ -46,8 +46,9 @@ public class BlockUtils implements IMinecraft {
             return;
         }
         if (Opium.MODULE_MANAGER.isModuleEnabled("Rotations")) {
-            float[] rot = RotationUtils.getSmoothRotations(RotationUtils.getRotations(position.getX(), position.getY(), position.getZ()), ModuleRotations.INSTANCE.smoothness.getValue().intValue());
-            RotationUtils.rotate(event, rot);
+          //  float[] rot = RotationUtils.getSmoothRotations(RotationUtils.getRotations(position.getX(), position.getY(), position.getZ()), ModuleRotations.INSTANCE.blockSmoothness.getValue().intValue());
+          //  RotationUtils.rotate(event, rot);
+            Opium.ROTATION_MANAGER.RequestRotation(20, Vec3d.of(position),true);
         }
         mc.player.networkHandler.sendPacket(new PlayerInteractBlockC2SPacket(hand, new BlockHitResult(Vec3d.of(position.offset(Objects.requireNonNull(getPlaceableSide(position)))), Objects.requireNonNull(getPlaceableSide(position)).getOpposite(), position.offset(Objects.requireNonNull(getPlaceableSide(position))), false), 0));
         mc.player.networkHandler.sendPacket(new HandSwingC2SPacket(hand));
