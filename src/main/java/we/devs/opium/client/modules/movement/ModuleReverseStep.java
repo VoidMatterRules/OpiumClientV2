@@ -11,8 +11,8 @@ public class ModuleReverseStep extends Module {
     public static ValueNumber fallSpeed = new ValueNumber("FallSpeed", "Fall Speed", "Changes How quickly you step down blocks", 3.0, 0.0, 3.0);
 
     @Override
-    public void onUpdate() {
-        if (mc.player != null && mc.player.isOnGround() && mc.player.fallDistance <= height.getValue().doubleValue()) {
+    public void onTick() {
+        if (mc.player != null && mc.player.isOnGround() && mc.player.fallDistance <= height.getValue().doubleValue() && !mc.player.isTouchingWater() && !mc.player.isInLava()) {
             Vec3d currentVelocity = mc.player.getVelocity();
             mc.player.setVelocity(currentVelocity.x, -fallSpeed.getValue().doubleValue(), currentVelocity.z);
         }
