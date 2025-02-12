@@ -40,14 +40,14 @@ public class EnumComponent extends Component {
                 if (this.enumSize > maxIndex) {
                     this.enumSize = 0;
                 }
-                this.value.setValue(this.value.getEnums().get(this.enumSize));
+                this.value.setValue((Enum<?>) this.value.getEnums().get(this.enumSize));
             } else if (mouseButton == 1) {
                 int maxIndex = this.value.getEnums().size() - 1;
                 --this.enumSize;
                 if (this.enumSize < 0) {
                     this.enumSize = maxIndex;
                 }
-                this.value.setValue(this.value.getEnums().get(this.enumSize));
+                this.value.setValue((Enum<?>) this.value.getEnums().get(this.enumSize));
             }
         }
     }

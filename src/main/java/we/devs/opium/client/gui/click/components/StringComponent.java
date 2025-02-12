@@ -1,6 +1,5 @@
 package we.devs.opium.client.gui.click.components;
 
-import me.x150.renderer.font.FontRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.InputUtil;
@@ -156,7 +155,7 @@ public class StringComponent extends Component implements EventListener {
 
     @Override
     public void onKey(EventKey event) {
-        if (listening && event.getScanCode() == GLFW.GLFW_PRESS) {
+        if (listening && event.getAction() == GLFW.GLFW_PRESS) {
             handleKeyEvent(event);
         }
     }
@@ -196,7 +195,7 @@ public class StringComponent extends Component implements EventListener {
     }
 
     private void handleTypedCharacter(EventKey event) {
-        String keyName = GLFW.glfwGetKeyName(event.getKeyCode(), event.getScanCode());
+        String keyName = GLFW.glfwGetKeyName(event.getKeyCode(), GLFW.glfwGetKeyScancode(event.getKeyCode()));
         if (keyName != null && !keyName.isEmpty()) {
             char typedChar = keyName.charAt(0);
             if (isShiftPressed()) {

@@ -11,7 +11,6 @@ import we.devs.opium.client.values.impl.ValueNumber;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
 import net.minecraft.item.*;
 import net.minecraft.screen.slot.SlotActionType;
@@ -81,7 +80,7 @@ public class ModuleAutoArmor extends Module {
      */
     private boolean isMendingActive() {
         return mc.player.getMainHandStack().getItem().equals(Items.EXPERIENCE_BOTTLE) && mc.options.useKey.isPressed()
-                || ModuleMiddleClick.INSTANCE.xping;
+                || ModuleMiddleClick.INSTANCE.throwingXP;
     }
 
     /**

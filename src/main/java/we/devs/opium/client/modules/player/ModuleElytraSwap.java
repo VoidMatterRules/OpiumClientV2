@@ -20,10 +20,11 @@ import java.util.concurrent.TimeUnit;
 public class ModuleElytraSwap extends Module {
 
     private final ValueBoolean autoFirework = new ValueBoolean("AutoFirework", "Auto Firework", "Automatically uses a Firework when switching to an Elytra", true);
-    private final ValueEnum switchMode = new ValueEnum("SwitchMode", "Switch Mode", "Switch Modes", switchModes.Silent);
-    private final ValueNumber delay = new ValueNumber("CustomDelay", "Custom Delay", "Delay between the first jump and the second one to activate the Elytra.", 4, 1, 8);
+    private final ValueEnum<SwitchModes> switchMode = new ValueEnum<>("SwitchMode", "Switch Mode", "Switch Modes", SwitchModes.Silent);
+    private final ValueNumber delay = new ValueNumber("FireworkDelay", "Firework Delay", "Delay between jumping and using fireworks", 4, 0, 8);
 
 
+    ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     @Override
     public void onEnable() {
         if (nullCheck()) {
@@ -32,7 +33,7 @@ public class ModuleElytraSwap extends Module {
         }
 
         int fireworkSlot;
-        if (switchMode.getValue().equals(switchModes.InvSwitch)) {
+        if (switchMode.getValue().equals(SwitchModes.InvSwitch)) {
             fireworkSlot = InventoryUtils.findItem(Items.FIREWORK_ROCKET, 0, 36);
         } else fireworkSlot = InventoryUtils.findItem(Items.FIREWORK_ROCKET, 0, 8);
 
@@ -56,33 +57,13 @@ public class ModuleElytraSwap extends Module {
 
             // Handle auto firework logic
             if (autoFirework.getValue()) {
-
                 // Schedule Elytra flight after delay
-                ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
                 int delayTicks = delay.getValue().intValue();
-                long delayMillis = delayTicks * 50L; // Convert ticks to milliseconds
 
                 assert mc.player != null;
                 if (mc.player.isOnGround()) mc.player.jump();
-                scheduler.schedule(() -> mc.execute(() -> {
-                    mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
-
-                    if (!switchMode.getValue().equals(switchModes.InvSwitch) && switchMode.getValue().equals(switchModes.Silent)) {
-                        // Use firework from hotbar
-                        InventoryUtils.switchToSlot(fireworkSlot, true, () -> {
-                            InventoryUtils.itemUsage(Hand.MAIN_HAND);
-                        });
-                    } else if (switchMode.getValue().equals(switchModes.Strict)){
-                        InventoryUtils.switchToSlot(fireworkSlot, false, () -> {
-                            InventoryUtils.itemUsage(Hand.MAIN_HAND);
-                        });
-                }else {
-                        // Use firework from inventory
-                        InventoryUtils.useItemInOffhand(Items.FIREWORK_ROCKET);
-                    }
-                }), delayMillis, TimeUnit.MILLISECONDS);
-
-                scheduler.shutdown();
+                if(delayTicks == 0) useFirework(fireworkSlot);
+                else scheduler.schedule(() -> mc.execute(() -> useFirework(fireworkSlot)), delayTicks * 50L, TimeUnit.MILLISECONDS);
             }
         } else if (elytraSlot != 38 && elytraSlot != -1) {
             // Swap elytra to armor slot
@@ -93,6 +74,24 @@ public class ModuleElytraSwap extends Module {
         }
 
         disable(true); // Disable the module after completing the task
+    }
+
+    private void useFirework(int fireworkSlot) {
+        mc.player.networkHandler.sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
+
+        if (!switchMode.getValue().equals(SwitchModes.InvSwitch) && switchMode.getValue().equals(SwitchModes.Silent)) {
+            // Use firework from hotbar
+            InventoryUtils.switchToSlot(fireworkSlot, true, () -> {
+                InventoryUtils.itemUsage(Hand.MAIN_HAND);
+            });
+        } else if (switchMode.getValue().equals(SwitchModes.Strict)){
+            InventoryUtils.switchToSlot(fireworkSlot, false, () -> {
+                InventoryUtils.itemUsage(Hand.MAIN_HAND);
+            });
+        } else {
+            // Use firework in offhand
+            InventoryUtils.useItemInOffhand(Items.FIREWORK_ROCKET);
+        }
     }
 
     private int findBestChestplateSlot() {
@@ -122,7 +121,7 @@ public class ModuleElytraSwap extends Module {
         return -1;
     }
 
-    public enum switchModes {
+    public enum SwitchModes {
         Silent,
         Strict,
         InvSwitch

@@ -5,19 +5,19 @@ import we.devs.opium.api.manager.event.EventListener;
 
 public class EventKey extends EventArgument {
     private final int keyCode;
-    private final int scanCode;
+    private final int action;
 
     public EventKey(int keyCode, int scanCode) {
         this.keyCode = keyCode;
-        this.scanCode = scanCode;
+        this.action = scanCode;
     }
 
     public int getKeyCode() {
         return this.keyCode;
     }
 
-    public int getScanCode() {
-        return this.scanCode;
+    public int getAction() {
+        return this.action;
     }
 
     @Override
