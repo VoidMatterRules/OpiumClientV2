@@ -17,7 +17,6 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.FluidTags;
 import we.devs.opium.Opium;
 import we.devs.opium.client.events.EventMotion;
-import we.devs.opium.client.modules.client.ModuleRotations;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ExperienceOrbEntity;
@@ -48,7 +47,7 @@ public class BlockUtils implements IMinecraft {
         if (Opium.MODULE_MANAGER.isModuleEnabled("Rotations")) {
           //  float[] rot = RotationUtils.getSmoothRotations(RotationUtils.getRotations(position.getX(), position.getY(), position.getZ()), ModuleRotations.INSTANCE.blockSmoothness.getValue().intValue());
           //  RotationUtils.rotate(event, rot);
-            Opium.ROTATION_MANAGER.RequestRotation(20, Vec3d.of(position),true);
+            Opium.ROTATION_MANAGER.requestRotation(20, Vec3d.of(position),true);
         }
         mc.player.networkHandler.sendPacket(new PlayerInteractBlockC2SPacket(hand, new BlockHitResult(Vec3d.of(position.offset(Objects.requireNonNull(getPlaceableSide(position)))), Objects.requireNonNull(getPlaceableSide(position)).getOpposite(), position.offset(Objects.requireNonNull(getPlaceableSide(position))), false), 0));
         mc.player.networkHandler.sendPacket(new HandSwingC2SPacket(hand));

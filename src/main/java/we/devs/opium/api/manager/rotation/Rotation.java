@@ -5,16 +5,11 @@ public class Rotation {
     private float yaw, pitch;
     private boolean block;
 
-    public Rotation(int priority, float yaw, float pitch, boolean snap,boolean grim, boolean block)
-    {
+    public Rotation(int priority, float yaw, float pitch, boolean block) {
         this.priority = priority;
         this.yaw = yaw;
         this.pitch = pitch;
         this.block = block;
-    }
-
-    public Rotation(int priority, float yaw, float pitch, boolean block) {
-        this(priority, yaw, pitch, false,true,block);
     }
 
     public int getPriority() {
