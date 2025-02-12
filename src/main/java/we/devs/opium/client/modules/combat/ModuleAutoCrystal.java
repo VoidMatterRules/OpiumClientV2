@@ -16,12 +16,14 @@ import net.minecraft.util.math.Vec3d;
 import we.devs.opium.api.manager.module.Module;
 import we.devs.opium.api.manager.module.RegisterModule;
 import we.devs.opium.api.utilities.ChatUtils;
+import we.devs.opium.api.utilities.DamageUtils;
 import we.devs.opium.api.utilities.PlayerUtils;
 import we.devs.opium.client.values.impl.ValueBoolean;
 import we.devs.opium.client.values.impl.ValueEnum;
 import we.devs.opium.client.values.impl.ValueNumber;
 import we.devs.opium.api.utilities.InventoryUtils;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,6 +47,8 @@ public class ModuleAutoCrystal extends Module {
     private final ValueBoolean blockPlacements = new ValueBoolean("BlockPlacements", "Block Placements", "Determines if the Client will Place Obsidian at Possible Damage Positions that do not have obsidian.", false); //Intention here is that if the client found a good position but is missing a block to place it on, it would place an obsidian block, this should be calculated in such a way that it doesnt include any positions that dont have a placeable block near them and also dont place on already placeable blocks like obi and bedrock
     private final ValueBoolean totemPopPrio = new ValueBoolean("TotemPopPrio", "Totem Pop Prio", "Determines if Totem Pops are Valued over the highest Damage that can be done to a target", true); //this would mean that if you had 2 cases: in 1 case the target would pop, but another Target in case 2 would take more damage, the totempop would be prioritised, meaning the first case would be made the target
     private final ValueNumber armorBreaker = new ValueNumber("ArmorBreaker", "Armor Breaker", "If a Enemy Players Armor reaches this threashhold or is below it, the CA will target said Player. (-1 to turn it off)", 25, -1, 100);
+    private final ValueNumber maxSelfDamage = new ValueNumber("MaxSelfDamage", "MaxSelfDamage", "Max damage that can be dealt to self", 6, 0, 36);
+    private final ValueNumber minTargetDamage = new ValueNumber("MinTargetDamage", "MinTargetDamage", "Damage required to consider a position", 12, 0, 36);
 
     private final Set<BlockPos> blacklistedPositions = new HashSet<>();
 
@@ -84,7 +88,7 @@ public class ModuleAutoCrystal extends Module {
 
     private BlockPos findBestPlacePosition(PlayerEntity target) {
         BlockPos targetPos = target.getBlockPos();
-        List<BlockPos> positions = Stream.of(
+        List<BlockPos> positions = new ArrayList<>(List.of(
                 targetPos.north(),
                 targetPos.south(),
                 targetPos.east(),
@@ -94,13 +98,23 @@ public class ModuleAutoCrystal extends Module {
                 targetPos.east().down(),
                 targetPos.west().down(),
                 targetPos.down()
-        ).collect(Collectors.toList());
+        ));
 
-        return positions.stream()
-                .filter(pos -> isValidTargetBlock(pos) && target.getPos().distanceTo(Vec3d.ofCenter(pos)) >= 1)
-                .filter(pos -> !blacklistedPositions.contains(pos))
-                .max((pos1, pos2) -> Float.compare(calculateDamage(pos1, target), calculateDamage(pos2, target)))
-                .orElse(null);
+        double bestDamage = Double.MIN_VALUE;
+        double bestSelfDamage = Double.MAX_VALUE;
+        BlockPos bestPos = null;
+        for (BlockPos pos : positions) {
+            if(!isValidTargetBlock(pos) || target.getPos().distanceTo(Vec3d.ofCenter(pos)) < 1 || blacklistedPositions.contains(pos)) continue;
+            double damage = calculateDamage(pos, target);
+            double selfDamage = calculateDamage(pos, mc.player);
+            if(bestPos == null || damage > bestDamage || (damage == bestDamage && selfDamage < bestSelfDamage)) {
+                bestDamage = damage;
+                bestSelfDamage = selfDamage;
+                bestPos = pos;
+            }
+        }
+
+        return bestPos;
     } //make this a foreach loop, so that it quickly goes through the blocks and checks them, the one with the highest calculated damage and inside of the specified ranges should then get picked, this should also get done in a variabalie way, as currently it only checks pre defined positions
 
     private boolean isValidTargetBlock(BlockPos pos) {
