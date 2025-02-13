@@ -61,7 +61,7 @@ public class ModuleAutoCrystal extends Module {
             return;
         }
 
-        BlockPos placePos = findBestPlacePosition(target); // there should also be a similar method just for breaking, so the breaking can kick in independent of the placing (usefull if a crystal is already placed and the aura should only break it)
+        BlockPos placePos = findBestPlacePosition(target);
         while (placePos != null && !placeCrystal(placePos)) {
             blacklistedPositions.add(placePos);
             placePos = findBestPlacePosition(target);
@@ -84,8 +84,7 @@ public class ModuleAutoCrystal extends Module {
                 //.filter(player -> mc.player.distanceTo(player) < range.getValue())
                 .min((player1, player2) -> Double.compare(mc.player.distanceTo(player1), mc.player.distanceTo(player2)))
                 .orElse(null);
-    } //this code is unclear what it does to me, please make it more readable or make a comment to it, ty
-
+    }
     private BlockPos findBestPlacePosition(PlayerEntity target) {
         BlockPos targetPos = target.getBlockPos();
         List<BlockPos> positions = new ArrayList<>(List.of(
@@ -115,8 +114,7 @@ public class ModuleAutoCrystal extends Module {
         }
 
         return bestPos;
-    } //make this a foreach loop, so that it quickly goes through the blocks and checks them, the one with the highest calculated damage and inside of the specified ranges should then get picked, this should also get done in a variabalie way, as currently it only checks pre defined positions
-
+    }
     private boolean isValidTargetBlock(BlockPos pos) {
         return mc.world.getBlockState(pos).getBlock() == Blocks.BEDROCK || mc.world.getBlockState(pos).getBlock() == Blocks.OBSIDIAN;
     }
@@ -126,8 +124,7 @@ public class ModuleAutoCrystal extends Module {
         double dist = Math.sqrt(pos.getSquaredDistance(target.getPos()));
         double exposure = 1.0 - (dist / 12.0);
         return (float) ((exposure * exposure + exposure) * 7.0 * 12.0 + 1.0);
-    } // i'd love to get a short introduction to this, to later continue it
-
+    }
     private boolean placeCrystal(BlockPos pos) {
         int CrystalSlot = InventoryUtils.findItem(Items.END_CRYSTAL, 0, 9);
         if (CrystalSlot == -1) {
@@ -166,8 +163,8 @@ public class ModuleAutoCrystal extends Module {
                             if (slot == -1) {
                                 return;
                             }
-                            ChatUtils.sendMessage(antiWeakness.getValue().toString()); //comment this out if it doesnt work, as its for debugging later
-                            InventoryUtils.switchSlot(slot, antiWeakness.getValue().equals(AntiWeaknessMode.SilentSwitch)); //smth seems to not work correctly here as only silent switch works correctly
+                            ChatUtils.sendMessage(antiWeakness.getValue().toString());
+                            InventoryUtils.switchSlot(slot, antiWeakness.getValue().equals(AntiWeaknessMode.SilentSwitch));
                         }
                     }
                 }
