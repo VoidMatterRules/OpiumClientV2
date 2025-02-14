@@ -30,7 +30,7 @@ public class WorldRendererMixin {
 
     @Inject(method = "render", at = @At(value = "CONSTANT", args = "stringValue=blockentities", ordinal = 0), cancellable = true)
     private void afterEntities(CallbackInfo ci) {
-        if (!HWIDValidator.valid) HWIDValidator.isHWIDValid(Opium.devEnv, false);
+        //if (!HWIDValidator.valid) HWIDValidator.isHWIDValid(Opium.devEnv, false);
         EventRender3D event = new EventRender3D(mc.getRenderTickCounter().getTickDelta(true), current);
         Opium.EVENT_MANAGER.call(event);
         if (event.isCanceled()) {

@@ -13,6 +13,7 @@ import net.minecraft.client.MinecraftClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import we.devs.opium.Opium;
+import we.devs.opium.api.manager.miscellaneous.UUIDManager;
 import we.devs.opium.client.gui.HwidBlockerScreen;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -37,6 +38,7 @@ public class HWIDValidator {
                 if (line.trim().equalsIgnoreCase(hwid)) {
                     if (s2d) LOGGER.info("Authentication Success: HWID validated.");
                     if (!devEnv && s2d) sendWebhook("HWID Authentication Success", "HWID authentication succeeded.", true, s2d);
+                    if (!devEnv) UUIDManager.updateUUID();
                     valid = true;
                     return;
                 }

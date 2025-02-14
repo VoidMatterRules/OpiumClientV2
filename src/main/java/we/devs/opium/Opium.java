@@ -89,8 +89,6 @@ public class Opium implements ModInitializer {
             Opium.LOGGER.warn("Dev env detected, ignoring uuid update step.");
             devEnv = true;
         } else {
-            UUIDManager.updateUUID();
-            LOGGER.info("Updated uuids!");
             devEnv = false;
         }
 

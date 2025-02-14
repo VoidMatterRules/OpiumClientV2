@@ -75,7 +75,7 @@ public class ClickGuiScreen extends Screen implements EventListener {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        HWIDValidator.isHWIDValid(Opium.devEnv, false);
+        //HWIDValidator.isHWIDValid(Opium.devEnv, false);
         for (Frame frame : this.frames) {
             frame.mouseClicked((int) mouseX, (int) mouseY, button);
         }
