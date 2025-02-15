@@ -84,12 +84,10 @@ public class Opium implements ModInitializer {
         long startTime = System.currentTimeMillis();
         LOGGER.info("Initialization process for Opium has started!");
 
-        if(mc.getSession().getAccessToken().equals("FabricMC")) {
-            // don't fetch ids if in a dev env (frequent restarts might accidentally rate-limit the server)
-            Opium.LOGGER.warn("Dev env detected, ignoring uuid update step.");
-            devEnv = true;
-        } else {
-            devEnv = false;
+        devEnv = mc.getSession().getAccessToken().equals("FabricMC");
+
+        if (devEnv) {
+            Opium.LOGGER.warn("Dev env detected, ignoring UUID update step.");
         }
 
         MusicDownloader.downloadMusicFiles();
