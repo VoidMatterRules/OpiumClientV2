@@ -53,6 +53,7 @@ public class ModuleBurrowESP extends Module {
             float centerX = (float) (position.x - textWidth / 2);
 
             // Distance-Based Scaling
+            assert mc.cameraEntity != null;
             float distance = (float) mc.cameraEntity.squaredDistanceTo(worldPos);
             float scaleFactor = MathHelper.clamp(scale.getValue().floatValue() / (distance * 0.1f), minScale.getValue().floatValue(), scale.getValue().floatValue());
 

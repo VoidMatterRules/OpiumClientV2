@@ -23,7 +23,6 @@ public class ModuleElytraSwap extends Module {
     private final ValueEnum<SwitchModes> switchMode = new ValueEnum<>("SwitchMode", "Switch Mode", "Switch Modes", SwitchModes.Silent);
     private final ValueNumber delay = new ValueNumber("FireworkDelay", "Firework Delay", "Delay between jumping and using fireworks", 4, 0, 8);
 
-
     ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     @Override
     public void onEnable() {
