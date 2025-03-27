@@ -3,7 +3,6 @@ package we.devs.opium.client.gui.click;
 import we.devs.opium.Opium;
 import we.devs.opium.api.manager.event.EventListener;
 import we.devs.opium.api.manager.module.Module;
-import we.devs.opium.api.utilities.HWIDValidator;
 import we.devs.opium.api.utilities.RenderUtils;
 import we.devs.opium.client.gui.click.components.ModuleComponent;
 import we.devs.opium.client.gui.click.manage.Component;

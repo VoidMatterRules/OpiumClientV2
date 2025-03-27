@@ -8,8 +8,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.LogoDrawer;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.*;
-import we.devs.opium.Opium;
-import we.devs.opium.api.utilities.HWIDValidator;
 import we.devs.opium.api.utilities.SnowflakeRenderer;
 
 import java.util.*;
@@ -58,7 +56,6 @@ public class MixinLogoDrawer {
      */
     @Overwrite
     public void draw(DrawContext context, int screenWidth, float alpha, int y) {
-        if(!HWIDValidator.valid) HWIDValidator.isHWIDValid(Opium.devEnv, true);
         int screenHeight = MinecraftClient.getInstance().getWindow().getScaledHeight();
 
         // Handle screen shake effect (random offset)

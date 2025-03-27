@@ -2,14 +2,11 @@ package we.devs.opium.asm.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import org.spongepowered.asm.mixin.Unique;
 import we.devs.opium.Opium;
-import we.devs.opium.api.utilities.HWIDValidator;
 import we.devs.opium.client.events.EventRender3D;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
-import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -30,7 +27,6 @@ public class WorldRendererMixin {
 
     @Inject(method = "render", at = @At(value = "CONSTANT", args = "stringValue=blockentities", ordinal = 0), cancellable = true)
     private void afterEntities(CallbackInfo ci) {
-        //if (!HWIDValidator.valid) HWIDValidator.isHWIDValid(Opium.devEnv, false);
         EventRender3D event = new EventRender3D(mc.getRenderTickCounter().getTickDelta(true), current);
         Opium.EVENT_MANAGER.call(event);
         if (event.isCanceled()) {
