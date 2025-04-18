@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import we.devs.opium.Opium;
-import we.devs.opium.api.utilities.HWIDValidator;
 import we.devs.opium.client.events.DeathEvent;
 import we.devs.opium.api.utilities.IMinecraft;
 
@@ -27,7 +26,6 @@ public class LivingEntityMixin extends EntityMixin implements IMinecraft {
 
     @Inject(method = "onTrackedDataSet", at = @At("RETURN"))
     public void onTrackedDataSet(TrackedData<?> data, CallbackInfo ci) {
-        //if (!HWIDValidator.valid) HWIDValidator.isHWIDValid(Opium.devEnv, false);
         if (data.equals(HEALTH) && this.dataTracker.get(HEALTH) <= 0.0 && mc.world != null && mc.world.isClient()) {
             DeathEvent deathEvent = new DeathEvent(LivingEntity.class.cast(this));
             Opium.EVENT_MANAGER.call(deathEvent);
