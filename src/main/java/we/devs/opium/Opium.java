@@ -14,7 +14,6 @@ import we.devs.opium.api.manager.event.EventManager;
 import we.devs.opium.api.manager.friend.FriendManager;
 import we.devs.opium.api.manager.miscellaneous.ConfigManager;
 import we.devs.opium.api.manager.miscellaneous.PlayerManager;
-import we.devs.opium.api.manager.miscellaneous.UUIDManager;
 import we.devs.opium.api.manager.module.ModuleManager;
 import we.devs.opium.api.manager.music.CustomSoundEngineManager;
 import we.devs.opium.api.manager.music.MusicDownloader;
