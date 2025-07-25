@@ -12,4 +12,4 @@ The development team has been **completely restructured**, and we've built a **b
 We hope to see this comunity Grow!
 
 👉 **Join our community and check out the new client here:**  
-[Official Opium-Client Discord](https://discord.gg/TN4yWaK5uM)
+[Official Opium-Client Discord](https://discord.gg/opiumclient)
